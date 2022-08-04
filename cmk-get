@@ -3,7 +3,7 @@ LC_ALL=C
 
 # this is inspired by and deeply pulled from deb-get (https://github.com/wimpysworld/deb-get) by Martin Wimpress
 
-readonly VERSION="0.0.10"
+readonly VERSION="0.0.12"
 
 function usage() {
 cat <<HELP
@@ -218,7 +218,7 @@ function app_bw-cli() {
     get_release_info "https://api.github.com/repos/bitwarden/cli/releases/latest"
     if [ "${ACTION}" != "prettylist" ]; then
         URL=$(grep "browser_download_url.*.zip" "${CACHE}/${APP}.json" | head -n1 | cut -d'"' -f4)
-        APPVERSION=$(grep "tag_name.*" ~/Temp/bw-cli.json | cut -d'"' -f4 | cut --complement -c 1)
+        APPVERSION=$(grep "tag_name.*" "${CACHE}/${APP}.json" | cut -d'"' -f4 | cut --complement -c 1)
         ZIPFILE="${URL##*/}"
         UNZIP_NAME="bw"
         FINAL_LOCATION="$HOME/.local/bin"
