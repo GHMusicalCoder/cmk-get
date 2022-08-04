@@ -22,8 +22,8 @@ This is currently only for ubuntu systems.
 | :-----: | :-----: | :-----: | :-----: |
 | [<img src=".icons/file-trowel-solid.png" align="top" width="20" />]() | `btop` | <b>btop ++</b> | <i></i> |
 | [<img src=".icons/file-zipper-solid.png" align="top" width="20" />]() | `bw-cli` | <b>Bitwarden CLI</b> | <i></i> |
-| [<img src=".icons/file-linux-brands.png" align="top" width="20" />]() | `candy-icons` | <b>Candy Icons by Elivira</b> | <i></i> |
-| [<img src=".icons/file-linux-brands.png" align="top" width="20" />]() | `g910-keys` | <b>Logitech G910 Key Mapper</b> | <i></i> |
-| [<img src=".icons/file-linux-brands.png" align="top" width="20" />]() | `nerd-fonts` | <b>Nerd Fonts</b> | <i></i> |
-| [<img src=".icons/file-linux-brands.png" align="top" width="20" />]() | `sweet-dark-theme` | <b>Sweet Dark Theme by Elivira</b> | <i></i> |
-| [<img src=".icons/file-linux-brands.png" align="top" width="20" />]() | `sweet-folder` | <b>Sweet Purple Folder by Elivira</b> | <i></i> |
+| [<img src=".icons/icon-linux.png" align="top" width="20" />]() | `candy-icons` | <b>Candy Icons by Elivira</b> | <i></i> |
+| [<img src=".icons/icon-linux.png" align="top" width="20" />]() | `g910-keys` | <b>Logitech G910 Key Mapper</b> | <i></i> |
+| [<img src=".icons/icon-linux.png" align="top" width="20" />]() | `nerd-fonts` | <b>Nerd Fonts</b> | <i></i> |
+| [<img src=".icons/icon-linux.png" align="top" width="20" />]() | `sweet-dark-theme` | <b>Sweet Dark Theme by Elivira</b> | <i></i> |
+| [<img src=".icons/icon-linux.png" align="top" width="20" />]() | `sweet-folder` | <b>Sweet Purple Folder by Elivira</b> | <i></i> |
