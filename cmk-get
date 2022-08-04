@@ -3,7 +3,7 @@ LC_ALL=C
 
 # this is inspired by and deeply pulled from deb-get (https://github.com/wimpysworld/deb-get) by Martin Wimpress
 
-readonly VERSION="0.0.3"
+readonly VERSION="0.0.7"
 
 function usage() {
 cat <<HELP
@@ -196,22 +196,24 @@ case "${ACTION}" in
     cache)
         TEMP=$(lsd -lh ${CACHE})
         if [ -z "${TEMP}" ]; then
-            echo "The cache exists, but is currently empty (nothing has been installed)."
+            echo "The cache ${CACHE} exists, but is currently empty (nothing has been installed)."
         else
             lsd -lh ${CACHE}
         fi;;
     clean)
-        echo "not yet implemented...";;
+        elevate_privs
+        ${EV} rm -v "${CACHE}/*";;
     comma)
-        echo "not yet implemented...";;
+        ACTION="prettylist"
+        applist_csv;;
     fancy)
-        echo "not yet implemented...";;
-    help)
-        echo "not yet implemented...";;
+        ACTION="prettylist"
+        applist_md;;
+    help)   usage;;
     install)
         echo "not yet implemented...";;
     list)
-        echo "not yet implemented...";;
+        list_apps;;
     remove)
         echo "not yet implemented...";;
     show)
@@ -220,7 +222,6 @@ case "${ACTION}" in
         echo "not yet implemented...";;
     upgrade)
         echo "not yet implemented...";;
-    version)
-        echo "not yet implemented...";;
+    version)    echo "$(basename ${0}) current verion: ${VERSION}";;
     *)  messenger fatal "Unknown action supplied: ${ACTION}";;
 esac
