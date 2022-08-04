@@ -3,7 +3,7 @@ LC_ALL=C
 
 # this is inspired by and deeply pulled from deb-get (https://github.com/wimpysworld/deb-get) by Martin Wimpress
 
-readonly VERSION="0.0.9"
+readonly VERSION="0.0.10"
 
 function usage() {
 cat <<HELP
@@ -162,6 +162,10 @@ function applist_md() {
         echo "| [<img src=\".icons/${ICON}\" align=\"top\" width=\"20\" style=\"background-color:white;padding:20px;\" />](${WEBSITE}) | "'`'"${APP}"'`'" | <b>${PRETTYNAME}</b> | <i>${SUMMARY}</i> |"
     done
 }
+
+function show_appinfo() {
+    echo "not yet implemented"
+}
 # function get_cache_file() {
     
 # }
@@ -268,7 +272,8 @@ case "${ACTION}" in
     remove)
         echo "not yet implemented...";;
     show)
-        echo "not yet implemented...";;
+        validator "${1}"
+        show_appinfo;;
     update)
         echo "not yet implemented...";;
     upgrade)
