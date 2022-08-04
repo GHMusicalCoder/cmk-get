@@ -154,10 +154,10 @@ function applist_md() {
     for APP in "${APPS[@]}"; do
         validator "${APP}"
         case ${METHOD} in
-            zip)    ICON="icon-zipper.svc";;
-            repo)   ICON="icon-github.svc";;
-            make)   ICON="icon-trowel.svc";;
-            *)      ICON="icon-linux.svc";;
+            zip)    ICON="icon-zipper.svg";;
+            repo)   ICON="icon-github.svg";;
+            make)   ICON="icon-trowel.svg";;
+            *)      ICON="icon-linux.svg";;
         esac
         echo "| [<img src=\".icons/${ICON}\" align=\"top\" width=\"20\" style=\"background-color:white\" />](${WEBSITE}) | "'`'"${APP}"'`'" | <b>${PRETTYNAME}</b> | <i>${SUMMARY}</i> |"
     done
