@@ -18,12 +18,87 @@ This is currently only for ubuntu systems.
   - because of this, I don't care about arch as I'm only install on intel/amd cpu's
   - nor do I care about releases,  versions, or the ID of the OS
 
+## Usage
+
+Here's an example of how to install Google Chrome.
+
+```bash
+deb-get install google-chrome-stable
+```
+
+You can see what applications are supported by using `deb-get list` or you
+can search the available applications with `deb-get search <app>`.
+
+You can upgrade packages installed using `deb-get` by running
+`deb-get upgrade`.
+
+<!-- [[[cog
+import subprocess
+
+import cog
+result = subprocess.check_output(["./cmk-get", "help"], encoding="utf-8")
+# strip the "Usage" header
+help = result.replace("Usage\n\n", "").rstrip()
+cog.out(f"```\n{help}\n```")
+]]] -->
+```
+
+cmk-get {update | upgrade | show pkg | install pkg | remove pkg  | cache 
+        | clean | list | fancy | comma | help | version}
+
+cmk-get provides a high-level commandline interface to easily install and update packages
+published in 3rd party github/gitlab releases, or other sites via direct download.
+
+update
+    update is used to resynchronize the app index files from their sources.
+
+upgrade
+    upgrade is used to install the newest versions of all apps currently installed on the system.
+
+install
+    install is followed by one app desired for installation or upgrading.
+
+remove
+    remove is identical to install except apps are removed instead of installed.
+
+clean
+    clean clears out the local repository (/var/cache/cmk-get) of retrieved app files.
+
+show
+    show is followed by one app and shows information about the given app including its install source and update mechanism.
+
+list
+    list the apps available via cmk-get.
+
+fancy
+    markdown formatted list of apps available via cmk-get.
+
+comma
+    CSV formatted list of apps available via cmk-get.
+
+cache
+    list the contents of the cmk-get cache (/var/cache/cmk-get)
+
+help
+    shows this help
+
+version
+    show cmk-get version
+```
+<!-- [[[end]]] -->
+
+
+<!-- [[[cog
+pretty_list = subprocess.check_output(["./cmk-get", "fancy"], encoding="utf-8")
+cog.out(pretty_list)
+]]] -->
 | Source | Install Name | Application Name | Description |
 | :-----: | :-----: | :-----: | :-----: |
-| [<img src=".icons/file-trowel-solid.png" align="top" width="20" />]() | `btop` | <b>btop ++</b> | <i></i> |
-| [<img src=".icons/file-zipper-solid.png" align="top" width="20" />]() | `bw-cli` | <b>Bitwarden CLI</b> | <i></i> |
-| [<img src=".icons/icon-linux.png" align="top" width="20" />]() | `candy-icons` | <b>Candy Icons by Elivira</b> | <i></i> |
-| [<img src=".icons/icon-linux.png" align="top" width="20" />]() | `g910-keys` | <b>Logitech G910 Key Mapper</b> | <i></i> |
-| [<img src=".icons/icon-linux.png" align="top" width="20" />]() | `nerd-fonts` | <b>Nerd Fonts</b> | <i></i> |
-| [<img src=".icons/icon-linux.png" align="top" width="20" />]() | `sweet-dark-theme` | <b>Sweet Dark Theme by Elivira</b> | <i></i> |
-| [<img src=".icons/icon-linux.png" align="top" width="20" />]() | `sweet-folder` | <b>Sweet Purple Folder by Elivira</b> | <i></i> |
+| [<img src=".icons/icon-trowel.svg" align="top" width="20" />]() | `btop` | <b>btop ++</b> | <i></i> |
+| [<img src=".icons/icon-zipper.svg" align="top" width="20" />]() | `bw-cli` | <b>Bitwarden CLI</b> | <i></i> |
+| [<img src=".icons/icon-linux.svg" align="top" width="20" />]() | `candy-icons` | <b>Candy Icons by Elivira</b> | <i></i> |
+| [<img src=".icons/icon-linux.svg" align="top" width="20" />]() | `g910-keys` | <b>Logitech G910 Key Mapper</b> | <i></i> |
+| [<img src=".icons/icon-linux.svg" align="top" width="20" />]() | `nerd-fonts` | <b>Nerd Fonts</b> | <i></i> |
+| [<img src=".icons/icon-linux.svg" align="top" width="20" />]() | `sweet-dark-theme` | <b>Sweet Dark Theme by Elivira</b> | <i></i> |
+| [<img src=".icons/icon-linux.svg" align="top" width="20" />]() | `sweet-folder` | <b>Sweet Purple Folder by Elivira</b> | <i></i> |
+<!-- [[[end]]] -->
