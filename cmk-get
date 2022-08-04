@@ -74,7 +74,7 @@ function messenger() {
 
     case ${MTYPE} in
         info) echo -e " [${BLUE}+${RESET}] ${CYAN}${MSG}${RESET}";;
-        progress) echo -en " [${GREEN}+${RESET}] ${CYAN}${MSG}${RESET}";;
+        progress) echo -e " [${GREEN}+${RESET}] ${CYAN}${MSG}${RESET}";;
         recommend) echo -e " [${MAGENTA}!${RESET}] ${MAGENTA}${MSG}${RESET}";;
         warn) echo -e " [${YELLOW}*${RESET}] ${YELLOW}WARNING! ${MSG}${RESET}";;
         error) echo -e " [${RED}!${RESET}] ${RED}ERROR! ${MSG}${RESET}";;
@@ -85,7 +85,7 @@ function messenger() {
 }
 
 function is_installed() {
-    if [ -f "${CACHE}/installed_${1}" ]; then
+    if [ -f "${CACHE}/installed_${1}*" ]; then
         return 0;
     else
         return 1;
@@ -105,17 +105,17 @@ function list_apps() {
 }
 
 function elevate_privs() {
-    if [ "$(id -ru) -eq 0" ]; then
-        EV=""
+    if [ "$(id -ru)" -eq 0 ]; then
+        EP=""
     elif command -v sudo 1>/dev/null; then
-        EV="sudo"
+        EP="sudo"
     else
         fancy_message fatal "$(basename ${0}) requires sudo to elevate permissions, sudo was found."
     fi 
 
     # Authenticate root context
-    if [ -n "${EV}" ]; then
-        ${EV} true
+    if [ -n "${EP}" ]; then
+        ${EP} true
     fi
 }
 
@@ -129,10 +129,14 @@ function validator() {
     fi
 
     export APPVERSION=""
+    export FINAL_LOCATION=""
     export METHOD=""
     export PRETTYNAME=""
     export SUMMARY=""
+    export UNZIP_NAME=""
+    export URL=""
     export WEBSITE=""
+    export ZIPFILE=""
 
     # Source the variables
     app_${APP} 2>/dev/null
@@ -166,10 +170,43 @@ function applist_md() {
 function show_appinfo() {
     echo "not yet implemented"
 }
-# function get_cache_file() {
-    
-# }
 
+function get_release_info() {
+    # do not process releases while generating lists
+    if [ "${ACTION}" == "install" ] || [ "${ACTION}" == "update" ]; then
+        messenger progress "Updating ${CACHE}/${APP}.json"
+        if [ ! -e "${CACHE}/${APP}.json" ] || test "$(find "${CACHE}/${APP}.json" -mmin +60)"; then
+            if ! ${EP} wget -q "${1}" -O "${CACHE}/${APP}.json"; then
+                messenger warn "Updating ${CACHE}/${APP}.json failed.  Deleting it."
+                ${EP} rm "${CACHE}/{$APP}.json" 2>/dev/null
+            fi
+            if [ -f "${CACHE}/${APP}.json" ] && grep "API rate limit exceeded" "${CACHE}/${APP}.json"; then
+                messenger warn "Updating ${CACHE}/${APP}.json exceed GitHub API limits. Deleting it."
+                ${EP} rm "${CACHE}/${APP}.json" 2>/dev/null
+            fi
+        fi
+    fi
+
+}
+
+function download_file() {
+    if [ ! -f "${CACHE}/${ZIPFILE}" ]; then
+        if ! ${EP} wget --quiet --continue --show-progress --progress=bar:force:noscroll "${URL}" -O "${CACHE}/${ZIPFILE}"; then
+            messenger error "Failed to download ${ZIPFILE}.  Deleting ${CACHE}/${ZIPFILE}"
+            ${EP} rm "${CACHE}/${ZIPFILE}" 2>/dev/null
+        fi
+    fi
+}
+
+function install_zip() {
+    download_file
+    ${EP} unzip -qq "${CACHE}/${ZIPFILE}" -d "${CACHE}/${APP}"
+    cp "${CACHE}/${APP}/${UNZIP_NAME}" "${FINAL_LOCATION}/"
+    chmod 755 "${FINAL_LOCATION}/${UNZIP_NAME}"
+
+    # create the install record for the zip
+    ${EP} touch "${CACHE}/installed_${APP}_${APPVERSION}"
+}
 ###############################################################################
 ## end of helper functions
 ###############################################################################
@@ -178,8 +215,18 @@ function show_appinfo() {
 ## application functions
 ###############################################################################
 function app_bw-cli() {
+    get_release_info "https://api.github.com/repos/bitwarden/cli/releases/latest"
+    if [ "${ACTION}" != "prettylist" ]; then
+        URL=$(grep "browser_download_url.*.zip" "${CACHE}/${APP}.json" | head -n1 | cut -d'"' -f4)
+        APPVERSION=$(grep "tag_name.*" ~/Temp/bw-cli.json | cut -d'"' -f4 | cut --complement -c 1)
+        ZIPFILE="${URL##*/}"
+        UNZIP_NAME="bw"
+        FINAL_LOCATION="$HOME/.local/bin"
+    fi
     PRETTYNAME="Bitwarden CLI"
     METHOD="zip"
+    WEBSITE="https://www.bitwarden.com"
+    SUMMARY="A command line version of the Bitwarden Password Manager client."
 }
 
 function app_btop() {
@@ -257,7 +304,7 @@ case "${ACTION}" in
         fi;;
     clean)
         elevate_privs
-        ${EV} rm -v "${CACHE}/*";;
+        ${EP} rm -v "${CACHE}/*";;
     comma)
         ACTION="prettylist"
         applist_csv;;
@@ -266,7 +313,11 @@ case "${ACTION}" in
         applist_md;;
     help)   usage;;
     install)
-        echo "not yet implemented...";;
+        elevate_privs
+        validator "${1}"
+        case ${METHOD} in
+            zip) install_zip;;
+        esac;;
     list)
         list_apps;;
     remove)
