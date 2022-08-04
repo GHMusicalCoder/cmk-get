@@ -20,17 +20,16 @@ This is currently only for ubuntu systems.
 
 ## Usage
 
-Here's an example of how to install Google Chrome.
+Here's an example of how to install Bitwarden CLI.
 
 ```bash
-deb-get install google-chrome-stable
+cmk-get install bw-cli
 ```
 
-You can see what applications are supported by using `deb-get list` or you
-can search the available applications with `deb-get search <app>`.
+You can see what applications are supported by using `cmk-get list`.
 
-You can upgrade packages installed using `deb-get` by running
-`deb-get upgrade`.
+You can upgrade packages installed using `cmk-get` by running
+`cmk-get upgrade`.
 
 <!-- [[[cog
 import subprocess
