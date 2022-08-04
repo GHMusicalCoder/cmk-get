@@ -3,7 +3,7 @@ LC_ALL=C
 
 # this is inspired by and deeply pulled from deb-get (https://github.com/wimpysworld/deb-get) by Martin Wimpress
 
-readonly VERSION="0.1.0"
+readonly VERSION="0.0.3"
 
 function usage() {
 cat <<HELP
@@ -84,6 +84,26 @@ function messenger() {
     esac
 }
 
+function is_installed() {
+    if [ -f "${CACHE}/installed_${1}" ]; then
+        return 0;
+    else
+        return 1;
+    fi
+}
+
+function list_apps() {
+    local PAD='                              '
+    local STATUS="installed"
+    for APP in "${APPS[@]}"; do
+        if is_installed "${APP}"; then
+            printf "%s %s [ ${STATUS} ]\n" "${APP}" "${PAD:${#APP}}"
+        else
+            echo "${APP}"
+        fi
+    done
+}
+
 # function get_cache_file() {
     
 # }
@@ -129,6 +149,9 @@ function app_nerd-fonts () {
 ###############################################################################
 ## main application
 ###############################################################################
+readonly APPS=($(declare -F | grep app_ | sed 's|declare -f app_||g' | sort))
+readonly CACHE="/var/cache/cmk-get"
+
 
 if [ -n "${1}" ]; then
     ACTION="${1,,}"
@@ -138,3 +161,12 @@ else
     usage
     exit 1
 fi
+
+case ${ACTION} in
+    install|remove|show)
+        if [ -z "${1}" ]; then
+            messenger error "You must specify an app:\n"
+            list_apps
+            exit 1
+        fi
+esac
