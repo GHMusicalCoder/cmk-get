@@ -180,7 +180,7 @@ function app_bw-cli() {
 
 function app_btop() {
     PRETTYNAME="btop++"
-    METHOD="zip"
+    METHOD="make"
 }
 
 function app_g910-keys() {
