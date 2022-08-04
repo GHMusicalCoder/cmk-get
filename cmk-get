@@ -1,0 +1,126 @@
+#!/usr/bin/env bash
+LC_ALL=C
+
+# this is inspired by and deeply pulled from deb-get (https://github.com/wimpysworld/deb-get) by Martin Wimpress
+
+readonly VERSION="0.1.0"
+
+function usage() {
+cat <<HELP
+
+Usage
+
+cmk-get {update | upgrade | show pkg | install pkg | remove pkg  | cache 
+        | clean | list | fancy | comma | help | version}
+
+cmk-get provides a high-level commandline interface to easily install and update packages
+published in 3rd party github/gitlab releases, or other sites via direct download.
+
+update
+    update is used to resynchronize the app index files from their sources.
+
+upgrade
+    upgrade is used to install the newest versions of all apps currently installed on the system.
+
+install
+    install is followed by one app desired for installation or upgrading.
+
+remove
+    remove is identical to install except apps are removed instead of installed.
+
+clean
+    clean clears out the local repository (/var/cache/cmk-get) of retrieved app files.
+
+show
+    show is followed by one app and shows information about the given app including its install source and update mechanism.
+
+list
+    list the apps available via cmk-get.
+
+fancy
+    markdown formatted list of apps available via cmk-get.
+
+comma
+    CSV formatted list of apps available via cmk-get.
+
+cache
+    list the contents of the cmk-get cache (/var/cache/cmk-get)
+
+help
+    shows this help
+
+version
+    show cmk-get version
+HELP
+}
+
+function messenger() {
+    if [ -z "${1}" ] || [ -z "${2}" ]; then
+        return
+    fi
+
+    local RED="\e[31m"
+    local GREEN="\e[32m"
+    local YELLOW="\e[33m"
+    local BLUE="\e[34m"
+    local MAGENTA="\e[35m"
+    local CYAN="\e[36m"
+    local RESET="\e[0m"
+    local MTYPE="${1}"
+    local MSG="${2}"
+
+    case ${MTYPE} in
+        info) echo -e " [${BLUE}+${RESET}] ${CYAN}${MSG}${RESET}";;
+        progress) echo -en " [${GREEN}+${RESET}] ${CYAN}${MSG}${RESET}";;
+        recommend) echo -e " [${MAGENTA}!${RESET}] ${MAGENTA}${MSG}${RESET}";;
+        warn) echo -e " [${YELLOW}*${RESET}] ${YELLOW}WARNING! ${MSG}${RESET}";;
+        error) echo -e " [${RED}!${RESET}] ${RED}ERROR! ${MSG}${RESET}";;
+        fatal) echo -e " [${RED}!${RESET}] ${RED}ERROR! ${MSG}${RESET}"
+                exit 1;;
+        *) echo -e " [?] UNKNOWN: ${MSG}";;
+    esac
+}
+
+function get_cache_file() {
+    
+}
+
+
+###############################################################################
+## application functions
+###############################################################################
+function app_bw-cli() {
+
+}
+
+function app_btop() {
+
+}
+
+function app_g910-keys() {
+
+}
+
+function app_sweet-dark-theme() {
+
+}
+
+function app_candy-icons() {
+
+}
+
+function app_sweet-folder() {
+
+}
+###############################################################################
+## end of application functions
+###############################################################################
+
+if [ -n "${1}" ]; then
+    ACTION="${1,,}"
+    shift
+else
+    messenger error "You must specify an action."
+    usage
+    exit 1
+fi
