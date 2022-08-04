@@ -1,5 +1,7 @@
 # cmk-get
-My personal installer program based on deb-get.  Used for zips and tars.  Will be used to install and update non-deb / non-flatpak programs
+My personal installer program based on deb-get.  Used for zips and tars or other non-deb applications.  
+Will be used to install and update non-deb / non-flatpak programs.
+This is currently only for ubuntu systems.
 
 ### current programs 
 - bw-cli (Bitwarden CLI program from GitHub)
@@ -8,3 +10,9 @@ My personal installer program based on deb-get.  Used for zips and tars.  Will b
 - sweet dark theme
 - candy icons
 - sweet folders
+
+### assumptions
+- uses sudo (not doas or as SU [root])
+- ubuntu base system (so Ubuntu or UMate, UBudgie, etc)
+  - because of this, I don't care about arch as I'm only install on intel/amd cpu's
+  - nor do I care about releases,  versions, or the ID of the OS
