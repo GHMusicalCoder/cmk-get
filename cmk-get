@@ -194,7 +194,12 @@ export EP=""
 
 case "${ACTION}" in
     cache)
-        lsd -lh ${CACHE};;
+        TEMP=$(lsd -lh ${CACHE})
+        if [ -z "${TEMP}" ]; then
+            echo "The cache exists, but is currently empty (nothing has been installed)."
+        else
+            lsd -lh ${CACHE}
+        fi;;
     clean)
         echo "not yet implemented...";;
     comma)
