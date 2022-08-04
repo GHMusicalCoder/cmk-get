@@ -54,6 +54,9 @@ version
 HELP
 }
 
+###############################################################################
+## helper functions
+###############################################################################
 function messenger() {
     if [ -z "${1}" ] || [ -z "${2}" ]; then
         return
@@ -81,39 +84,50 @@ function messenger() {
     esac
 }
 
-function get_cache_file() {
+# function get_cache_file() {
     
-}
+# }
 
+###############################################################################
+## end of helper functions
+###############################################################################
 
 ###############################################################################
 ## application functions
 ###############################################################################
 function app_bw-cli() {
-
+    PRETTYNAME="Bitwarden CLI"
 }
 
 function app_btop() {
-
+    PRETTYNAME="btop++"
 }
 
 function app_g910-keys() {
-
+    PRETTYNAME="Logitech G910 Key Mapper"
 }
 
 function app_sweet-dark-theme() {
-
+    PRETTYNAME="Sweet Dark Theme by Elivira"
 }
 
 function app_candy-icons() {
-
+    PRETTYNAME="Candy Icons by Elivira"
 }
 
 function app_sweet-folder() {
+    PRETTYNAME="Sweet Purple Folders by Elivira"
+}
 
+function app_nerd-fonts () {
+    PRETTYNAME="Nerd Fonts"
 }
 ###############################################################################
 ## end of application functions
+###############################################################################
+
+###############################################################################
+## main application
 ###############################################################################
 
 if [ -n "${1}" ]; then
