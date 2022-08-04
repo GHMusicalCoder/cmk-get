@@ -91,13 +91,13 @@ version
 pretty_list = subprocess.check_output(["./cmk-get", "fancy"], encoding="utf-8")
 cog.out(pretty_list)
 ]]] -->
-| Source | Install Name | Application Name | Description |
-| :-----: | :-----: | :-----: | :-----: |
-| [<img src=".icons/icon-trowel.svg" align="top" width="20" />]() | `btop` | <b>btop ++</b> | <i></i> |
-| [<img src=".icons/icon-zipper.svg" align="top" width="20" />]() | `bw-cli` | <b>Bitwarden CLI</b> | <i></i> |
-| [<img src=".icons/icon-linux.svg" align="top" width="20" />]() | `candy-icons` | <b>Candy Icons by Elivira</b> | <i></i> |
-| [<img src=".icons/icon-linux.svg" align="top" width="20" />]() | `g910-keys` | <b>Logitech G910 Key Mapper</b> | <i></i> |
-| [<img src=".icons/icon-linux.svg" align="top" width="20" />]() | `nerd-fonts` | <b>Nerd Fonts</b> | <i></i> |
-| [<img src=".icons/icon-linux.svg" align="top" width="20" />]() | `sweet-dark-theme` | <b>Sweet Dark Theme by Elivira</b> | <i></i> |
-| [<img src=".icons/icon-linux.svg" align="top" width="20" />]() | `sweet-folder` | <b>Sweet Purple Folder by Elivira</b> | <i></i> |
+| Source   | Install Name   | Application Name   | Description   |
+| :------: | :------------: | :----------------: | :-----------: |
+| [<img src=".icons/icon-zipper.svc" align="top" width="20" style="background-color:white" />]() | `btop` | <b>btop++</b> | <i></i> |
+| [<img src=".icons/icon-zipper.svc" align="top" width="20" style="background-color:white" />]() | `bw-cli` | <b>Bitwarden CLI</b> | <i></i> |
+| [<img src=".icons/icon-zipper.svc" align="top" width="20" style="background-color:white" />]() | `candy-icons` | <b>Candy Icons by Elivira</b> | <i></i> |
+| [<img src=".icons/icon-github.svc" align="top" width="20" style="background-color:white" />]() | `g910-keys` | <b>Logitech G910 Key Mapper</b> | <i></i> |
+| [<img src=".icons/icon-zipper.svc" align="top" width="20" style="background-color:white" />]() | `nerd-fonts` | <b>Nerd Fonts</b> | <i></i> |
+| [<img src=".icons/icon-zipper.svc" align="top" width="20" style="background-color:white" />]() | `sweet-dark-theme` | <b>Sweet Dark Theme by Elivira</b> | <i></i> |
+| [<img src=".icons/icon-zipper.svc" align="top" width="20" style="background-color:white" />]() | `sweet-folder` | <b>Sweet Purple Folders by Elivira</b> | <i></i> |
 <!-- [[[end]]] -->

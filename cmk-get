@@ -3,7 +3,7 @@ LC_ALL=C
 
 # this is inspired by and deeply pulled from deb-get (https://github.com/wimpysworld/deb-get) by Martin Wimpress
 
-readonly VERSION="0.0.8"
+readonly VERSION="0.0.9"
 
 function usage() {
 cat <<HELP
@@ -145,6 +145,22 @@ function applist_csv() {
         echo "\"${APP}\",\"${PRETTYNAME}\",\"${APPVERSION}\",\"${METHOD}\",\"${SUMMARY}\""
     done
    
+}
+
+function applist_md() {
+    local ICON=""
+    echo "| Source   | Install Name   | Application Name   | Description   |"
+    echo "| :------: | :------------: | :----------------: | :-----------: |"
+    for APP in "${APPS[@]}"; do
+        validator "${APP}"
+        case ${METHOD} in
+            zip)    ICON="icon-zipper.svc";;
+            repo)   ICON="icon-github.svc";;
+            make)   ICON="icon-trowel.svc";;
+            *)      ICON="icon-linux.svc";;
+        esac
+        echo "| [<img src=\".icons/${ICON}\" align=\"top\" width=\"20\" style=\"background-color:white\" />](${WEBSITE}) | "'`'"${APP}"'`'" | <b>${PRETTYNAME}</b> | <i>${SUMMARY}</i> |"
+    done
 }
 # function get_cache_file() {
     
