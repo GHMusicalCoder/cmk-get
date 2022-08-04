@@ -159,7 +159,7 @@ function applist_md() {
             make)   ICON="icon-trowel.svg";;
             *)      ICON="icon-linux.svg";;
         esac
-        echo "| [<img src=\".icons/${ICON}\" align=\"top\" width=\"20\" style=\"background-color:white\" />](${WEBSITE}) | "'`'"${APP}"'`'" | <b>${PRETTYNAME}</b> | <i>${SUMMARY}</i> |"
+        echo "| [<img src=\".icons/${ICON}\" align=\"top\" width=\"20\" style=\"background-color:white;padding:20px;\" />](${WEBSITE}) | "'`'"${APP}"'`'" | <b>${PRETTYNAME}</b> | <i>${SUMMARY}</i> |"
     done
 }
 # function get_cache_file() {
