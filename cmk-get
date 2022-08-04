@@ -104,6 +104,20 @@ function list_apps() {
     done
 }
 
+function elevate_privs() {
+    if [ "$(id -ru) -eq 0" ]; then
+        EV=""
+    elif command -v sudo 1>/dev/null; then
+        EV="sudo"
+    else
+        fancy_message fatal "$(basename ${0}) requires sudo to elevate permissions, sudo was found."
+    fi 
+
+    # Authenticate root context
+    if [ -n "${EV}" ]; then
+        ${EV} true
+    fi
+}
 # function get_cache_file() {
     
 # }
@@ -152,6 +166,11 @@ function app_nerd-fonts () {
 readonly APPS=($(declare -F | grep app_ | sed 's|declare -f app_||g' | sort))
 readonly CACHE="/var/cache/cmk-get"
 
+if [ ! -d "${CACHE}" ]; then
+    elevate_privs
+    ${EP} mkdir -p "${CACHE}" 2>/dev/null
+    ${EP} chmod 755 "${CACHE}" 2>/dev/null
+fi
 
 if [ -n "${1}" ]; then
     ACTION="${1,,}"
@@ -175,7 +194,7 @@ export EP=""
 
 case "${ACTION}" in
     cache)
-        echo "not yet implemented...";;
+        lsd -lh ${CACHE};;
     clean)
         echo "not yet implemented...";;
     comma)
