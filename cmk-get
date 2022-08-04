@@ -170,3 +170,33 @@ case ${ACTION} in
             exit 1
         fi
 esac
+
+export EP=""
+
+case "${ACTION}" in
+    cache)
+        echo "not yet implemented...";;
+    clean)
+        echo "not yet implemented...";;
+    comma)
+        echo "not yet implemented...";;
+    fancy)
+        echo "not yet implemented...";;
+    help)
+        echo "not yet implemented...";;
+    install)
+        echo "not yet implemented...";;
+    list)
+        echo "not yet implemented...";;
+    remove)
+        echo "not yet implemented...";;
+    show)
+        echo "not yet implemented...";;
+    update)
+        echo "not yet implemented...";;
+    upgrade)
+        echo "not yet implemented...";;
+    version)
+        echo "not yet implemented...";;
+    *)  messenger fatal "Unknown action supplied: ${ACTION}";;
+esac
