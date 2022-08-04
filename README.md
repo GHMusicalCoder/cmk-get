@@ -10,6 +10,7 @@ This is currently only for ubuntu systems.
 - sweet dark theme
 - candy icons
 - sweet folders
+- nerd fonts
 
 ### assumptions
 - uses sudo (not doas or as SU [root])
