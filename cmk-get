@@ -3,7 +3,7 @@ LC_ALL=C
 
 # this is inspired by and deeply pulled from deb-get (https://github.com/wimpysworld/deb-get) by Martin Wimpress
 
-readonly VERSION="0.0.17"
+readonly VERSION="0.0.18"
 
 function usage() {
 cat <<HELP
@@ -215,12 +215,16 @@ function download_file() {
 }
 
 function install_zip() {
+    # if final location doesn't exist - create it
+    if [ ! -d "${FINAL_LOCATION}" ]; then
+        if [ ${FINAL_LOCATION:0:5} == "/home" ]; then
+            mkdir -p "${FINAL_LOCATION}"
+        else 
+            sudo mkdir -p "${FINAL_LOCATION}"
+        fi
+    fi
     download_file
     ${EP} unzip -qq "${CACHE}/${ZIPFILE}" -d "${FINAL_LOCATION}"
-
-    if [ -z "${UNZIP_NAME}" ]; then
-        chmod 755 "${FINAL_LOCATION}/${UNZIP_NAME}"
-    fi
 
     # create the install record for the zip
     ${EP} touch "${CACHE}/installed_${APP}_${APPVERSION}"
@@ -262,6 +266,15 @@ function followup_g910() {
     ${CMD} +x "${DIR}/installer.sh"
     ${EP} "${DIR}/installer.sh" 2>/dev/null
     ${EP} systemctl enable --now g910-keys
+}
+
+function followup_sweet() {
+    gsettings set org.gnome.desktop.interface gtk-theme "Sweet-Dark"
+    gsettings set org.gnome.desktop.wm.preferences theme "Sweet-Dark"
+}
+
+function followup_bw() {
+    chmod 755 "${FINAL_LOCATION}/${UNZIP_NAME}"
 }
 
 ###############################################################################
@@ -311,10 +324,18 @@ function app_g910-keys() {
     SUMMARY="Linux keyboard mapper for Logitech G910 G-Keys."
 }
 
-function app_sweet-dark-theme() {
+function app_sweet-dark() {
     METHOD="zip"
-
-    PRETTYNAME="Sweet Dark Theme by Elivira"
+    get_release_info "https://api.github.com/repos/EliverLara/Sweet/releases/latest"
+    set_appversion
+    if [ "${ACTION}" != "prettylist" ]; then
+        URL=$(grep "browser_download_url.*Dark.zip" "${CACHE_FILE}" | head -n1 | cut -d'"' -f4)
+        FILE="${URL##*/}"
+        FINAL_LOCATION="$HOME/.themes"
+    fi
+    PRETTYNAME="Sweet Dark Theme"
+    WEBSITE="https://www.gnome-look.org/p/1253385/"
+    SUMMARY="Colorful Gtk3.20+ themes"
 }
 
 function app_candy-icons() {
@@ -394,6 +415,7 @@ case "${ACTION}" in
             zip) install_zip;;
         esac
         case ${APP} in
+            bw-cli)     followup_bw;;
             g910-keys)  followup_g910;;
             sweet-dark) followup_sweet;;
         esac;;
