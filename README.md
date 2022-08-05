@@ -1,22 +1,15 @@
 # cmk-get
-My personal installer program based on deb-get.  Used for zips and tars or other non-deb applications.  
+My personal installer program based on deb-get.  Used for zips and tars or other non-deb applications.  This will also use several one off functions to install special case software (like g910-keys)
+
 Will be used to install and update non-deb / non-flatpak programs.
 This is currently only for ubuntu systems.
 
-### current programs 
-- bw-cli (Bitwarden CLI program from GitHub)
-- btop++ (Github make)
-- g910-keys (Logitech g910 Keyboard extra GKeys mapper)
-- sweet dark theme
-- candy icons
-- sweet folders
-- nerd fonts
-
 ### assumptions
-- uses sudo (not doas or as SU [root])
+- uses sudo (not doas or as SU [root])  * may change as I learn more about doas
 - ubuntu base system (so Ubuntu or UMate, UBudgie, etc)
   - because of this, I don't care about arch as I'm only install on intel/amd cpu's
   - nor do I care about releases,  versions, or the ID of the OS
+- some installs will be coded to specific folder structures I use so other people using may require some additional tweaks
 
 ## Usage
 
