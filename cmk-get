@@ -159,7 +159,7 @@ function set_appversion() {
         # pull appversion from readme.md file
         APPVERSION=$(grep "Project version: .*" "${FINAL_LOCATION}/${REPO_NAME}/README.md" | cut -d':' -f2 | cut -d')' -f1 | cut --complement -c -2)
     else
-        if is_installed "${APP}"; then
+        if [ -e "${CACHE}/${APP}.json" ]; then
             APPVERSION=$(grep "tag_name.*" "${CACHE}/${APP}.json" | cut -d'"' -f4 | cut --complement -c 1)
         else
             APPVERSION="Not Installed"
