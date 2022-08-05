@@ -3,7 +3,7 @@ LC_ALL=C
 
 # this is inspired by and deeply pulled from deb-get (https://github.com/wimpysworld/deb-get) by Martin Wimpress
 
-readonly VERSION="0.0.16"
+readonly VERSION="0.0.17"
 
 function usage() {
 cat <<HELP
@@ -216,9 +216,11 @@ function download_file() {
 
 function install_zip() {
     download_file
-    ${EP} unzip -qq "${CACHE}/${ZIPFILE}" -d "${CACHE}/${APP}"
-    cp "${CACHE}/${APP}/${UNZIP_NAME}" "${FINAL_LOCATION}/"
-    chmod 755 "${FINAL_LOCATION}/${UNZIP_NAME}"
+    ${EP} unzip -qq "${CACHE}/${ZIPFILE}" -d "${FINAL_LOCATION}"
+
+    if [ -z "${UNZIP_NAME}" ]; then
+        chmod 755 "${FINAL_LOCATION}/${UNZIP_NAME}"
+    fi
 
     # create the install record for the zip
     ${EP} touch "${CACHE}/installed_${APP}_${APPVERSION}"
