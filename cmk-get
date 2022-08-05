@@ -3,7 +3,7 @@ LC_ALL=C
 
 # this is inspired by and deeply pulled from deb-get (https://github.com/wimpysworld/deb-get) by Martin Wimpress
 
-readonly VERSION="0.0.13"
+readonly VERSION="0.0.14"
 
 function usage() {
 cat <<HELP
@@ -155,10 +155,15 @@ function applist_csv() {
 }
 
 function set_appversion() {
-    if is_installed "${APP}"; then
-        APPVERSION=$(grep "tag_name.*" "${CACHE}/${APP}.json" | cut -d'"' -f4 | cut --complement -c 1)
+    if ${METHOD} == "repo"; then
+        # pull appversion from readme.md file
+        APPVERSION=$(grep "Project version: .*" "${FINAL_LOCATION}/${REPO_NAME}/README.md" | cut -d':' -f2 | cut -d')' -f1 | cut --complement -c -2)
     else
-        APPVERSION="Not Installed"
+        if is_installed "${APP}"; then
+            APPVERSION=$(grep "tag_name.*" "${CACHE}/${APP}.json" | cut -d'"' -f4 | cut --complement -c 1)
+        else
+            APPVERSION="Not Installed"
+        fi
     fi
 }
 
@@ -240,6 +245,26 @@ function install_repo() {
     fi
     ${GIT_CMD} "${REPO_URL}" ${FINAL_LOCATION}
 
+    set_appversion
+
+    case ${APP} in
+        g910-keys)  install_g910;;
+        *) messenger fatal "WTF are you doing in here?"
+    esac
+}
+
+function install_g910() {
+    local DIR="${FINAL_LOCATION}/${REPO_NAME}"
+    local CMD=""
+    if [ ${FINAL_LOCATION:0:5} == "/home" ]; then
+        CMD="chmod"
+    else
+        CMD="${EP} chmod"
+    fi
+    modprobe uinput
+    ${CMD} +x "${DIR}/installer.sh"
+    ${EP} "${DIR}/installer.sh" 2>/dev/null
+    ${EP} systemctl enable --now g910-keys
 }
 
 ###############################################################################
@@ -279,12 +304,12 @@ function app_btop() {
 }
 
 function app_g910-keys() {
+    METHOD="repo"
     # this is pulling from my personal fork (which is unchanged from the below website)
     REPO_NAME="g910-gkey-macro-support"
     REPO_URL="https://github.com/GHMusicalCoder/${REPO_NAME}.git"
     FINAL_LOCATION="$HOME/Applications/GitApps"
     PRETTYNAME="Logitech G910 Key Mapper"
-    METHOD="repo"
     WEBSITE="https://github.com/JSubelj/g910-gkey-macro-support"
     SUMMARY="Linux keyboard mapper for Logitech G910 G-Keys."
 }
