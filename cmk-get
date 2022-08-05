@@ -239,7 +239,7 @@ function install_repo() {
         GIT_CMD="${EP} git clone"
     fi
     ${GIT_CMD} "${REPO_URL}" ${FINAL_LOCATION}
-    
+
 }
 
 ###############################################################################
@@ -250,6 +250,7 @@ function install_repo() {
 ## application functions
 ###############################################################################
 function app_bw-cli() {
+    METHOD="zip"
     get_release_info "https://api.github.com/repos/bitwarden/cli/releases/latest"
     set_appversion
     if [ "${ACTION}" != "prettylist" ]; then
@@ -259,12 +260,12 @@ function app_bw-cli() {
         FINAL_LOCATION="$HOME/.local/bin"
     fi
     PRETTYNAME="Bitwarden CLI"
-    METHOD="zip"
     WEBSITE="https://www.bitwarden.com"
     SUMMARY="A command line version of the Bitwarden Password Manager client."
 }
 
 function app_btop() {
+    METHOD="make"
     get_release_info "https://api.github.com/repos/aristocratos/btop/releases/latest"
     set_appversion
     if [ "${ACTION}" != "prettylist" ]; then
@@ -273,7 +274,6 @@ function app_btop() {
         MAKE_PREFIX="PREFIX=$HOME/.local"
     fi    
     PRETTYNAME="btop++"
-    METHOD="make"
     WEBSITE="https://github.com/aristocratos/btop"
     SUMMARY="Resource monitor that shows usage and stats for processor, memory, disks, network and processes.  Written in C++"
 }
@@ -290,23 +290,24 @@ function app_g910-keys() {
 }
 
 function app_sweet-dark-theme() {
-    PRETTYNAME="Sweet Dark Theme by Elivira"
     METHOD="zip"
+
+    PRETTYNAME="Sweet Dark Theme by Elivira"
 }
 
 function app_candy-icons() {
-    PRETTYNAME="Candy Icons by Elivira"
     METHOD="zip"
+    PRETTYNAME="Candy Icons by Elivira"
 }
 
 function app_sweet-folder() {
-    PRETTYNAME="Sweet Purple Folders by Elivira"
     METHOD="zip"
+    PRETTYNAME="Sweet Purple Folders by Elivira"
 }
 
 function app_nerd-fonts () {
-    PRETTYNAME="Nerd Fonts"
     METHOD="zip"
+    PRETTYNAME="Nerd Fonts"
 }
 ###############################################################################
 ## end of application functions
