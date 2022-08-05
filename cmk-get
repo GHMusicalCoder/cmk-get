@@ -3,7 +3,7 @@ LC_ALL=C
 
 # this is inspired by and deeply pulled from deb-get (https://github.com/wimpysworld/deb-get) by Martin Wimpress
 
-readonly VERSION="0.0.18"
+readonly VERSION="0.0.19"
 
 function usage() {
 cat <<HELP
@@ -340,7 +340,10 @@ function app_sweet-dark() {
 
 function app_candy-icons() {
     METHOD="zip"
-    PRETTYNAME="Candy Icons by Elivira"
+    PRETTYNAME="Candy Icons"
+    WEBSITE="https://www.gnome-look.org/p/1253385/"
+    SUMMARY="Colorful Gtk3.20+ themes"
+
 }
 
 function app_sweet-folder() {
