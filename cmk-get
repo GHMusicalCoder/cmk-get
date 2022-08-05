@@ -3,7 +3,7 @@ LC_ALL=C
 
 # this is inspired by and deeply pulled from deb-get (https://github.com/wimpysworld/deb-get) by Martin Wimpress
 
-readonly VERSION="0.0.14"
+readonly VERSION="0.0.16"
 
 function usage() {
 cat <<HELP
@@ -246,14 +246,9 @@ function install_repo() {
     ${GIT_CMD} "${REPO_URL}" ${FINAL_LOCATION}
 
     set_appversion
-
-    case ${APP} in
-        g910-keys)  install_g910;;
-        *) messenger fatal "WTF are you doing in here?"
-    esac
 }
 
-function install_g910() {
+function followup_g910() {
     local DIR="${FINAL_LOCATION}/${REPO_NAME}"
     local CMD=""
     if [ ${FINAL_LOCATION:0:5} == "/home" ]; then
@@ -395,6 +390,10 @@ case "${ACTION}" in
             make) install_make;;
             repo) install_repo;;
             zip) install_zip;;
+        esac
+        case ${APP} in
+            g910-keys)  followup_g910;;
+            sweet-dark) followup_sweet;;
         esac;;
     list)
         list_apps;;
