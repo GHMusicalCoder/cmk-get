@@ -3,7 +3,7 @@ LC_ALL=C
 
 # this is inspired by and deeply pulled from deb-get (https://github.com/wimpysworld/deb-get) by Martin Wimpress
 
-readonly VERSION="0.0.19"
+readonly VERSION="0.0.20"
 
 function usage() {
 cat <<HELP
@@ -277,6 +277,13 @@ function followup_bw() {
     chmod 755 "${FINAL_LOCATION}/${UNZIP_NAME}"
 }
 
+function followup_candy() {
+    # icon zips into candy-icons-master so we want to rename to just candy-icons
+    mv "${HOME}/.icons/candy-icons-master" "${HOME}/.icons/candy-icons"
+
+    gsettings set org.gnome.desktop.interface icon-theme candy-icons
+}
+
 ###############################################################################
 ## end of helper functions
 ###############################################################################
@@ -329,8 +336,8 @@ function app_sweet-dark() {
     get_release_info "https://api.github.com/repos/EliverLara/Sweet/releases/latest"
     set_appversion
     if [ "${ACTION}" != "prettylist" ]; then
-        URL=$(grep "browser_download_url.*Dark.zip" "${CACHE_FILE}" | head -n1 | cut -d'"' -f4)
-        FILE="${URL##*/}"
+        URL=$(grep "browser_download_url.*Dark.zip" "${CACHE}/${APP}.json" | head -n1 | cut -d'"' -f4)
+        ZIPFILE="${URL##*/}"
         FINAL_LOCATION="$HOME/.themes"
     fi
     PRETTYNAME="Sweet Dark Theme"
@@ -340,9 +347,15 @@ function app_sweet-dark() {
 
 function app_candy-icons() {
     METHOD="zip"
+    APPVERSION="$(curl -s "https://github.com/EliverLara/candy-icons" | grep -m3 "<strong>" | tail -n 1 | cut -d'>' -f2 | cut -d'<' -f1)"
+    if [ "${ACTION}" != "prettylist" ]; then
+        URL="https://github.com/EliverLara/candy-icons/archive/refs/heads/master.zip"
+        ZIPFILE="${URL##*/}"
+        FINAL_LOCATION="$HOME/.icons"
+    fi
     PRETTYNAME="Candy Icons"
-    WEBSITE="https://www.gnome-look.org/p/1253385/"
-    SUMMARY="Colorful Gtk3.20+ themes"
+    WEBSITE="https://www.pling.com/p/1305251/"
+    SUMMARY="A Candy neon-istic icon theme."
 
 }
 
@@ -418,9 +431,10 @@ case "${ACTION}" in
             zip) install_zip;;
         esac
         case ${APP} in
-            bw-cli)     followup_bw;;
-            g910-keys)  followup_g910;;
-            sweet-dark) followup_sweet;;
+            bw-cli)         followup_bw;;
+            candy-icons)    followup_candy;;
+            g910-keys)      followup_g910;;
+            sweet-dark)     followup_sweet;;
         esac;;
     list)
         list_apps;;
