@@ -293,13 +293,13 @@ function followup_candy() {
 ###############################################################################
 function app_bw-cli() {
     METHOD="zip"
-    get_release_info "https://api.github.com/repos/bitwarden/cli/releases/latest"
-    set_appversion
     if [ "${ACTION}" != "prettylist" ]; then
+        get_release_info "https://api.github.com/repos/bitwarden/cli/releases/latest"
         URL=$(grep "browser_download_url.*.zip" "${CACHE}/${APP}.json" | head -n1 | cut -d'"' -f4)
         ZIPFILE="${URL##*/}"
         UNZIP_NAME="bw"
         FINAL_LOCATION="$HOME/.local/bin"
+        set_appversion
     fi
     PRETTYNAME="Bitwarden CLI"
     WEBSITE="https://www.bitwarden.com"
@@ -308,12 +308,12 @@ function app_bw-cli() {
 
 function app_btop() {
     METHOD="make"
-    get_release_info "https://api.github.com/repos/aristocratos/btop/releases/latest"
-    set_appversion
     if [ "${ACTION}" != "prettylist" ]; then
+        get_release_info "https://api.github.com/repos/aristocratos/btop/releases/latest"
         URL=$(grep "browser_download_url.*-x86_64-linux-musl.tbz" "${CACHE}/${APP}.json" | head -n1 | cut -d'"' -f4)
         ZIPFILE="${URL##*/}"
         MAKE_PREFIX="PREFIX=$HOME/.local"
+        set_appversion
     fi    
     PRETTYNAME="btop++"
     WEBSITE="https://github.com/aristocratos/btop"
@@ -323,9 +323,12 @@ function app_btop() {
 function app_g910-keys() {
     METHOD="repo"
     # this is pulling from my personal fork (which is unchanged from the below website)
-    REPO_NAME="g910-gkey-macro-support"
-    REPO_URL="https://github.com/GHMusicalCoder/${REPO_NAME}.git"
-    FINAL_LOCATION="$HOME/Applications/GitApps"
+    if [ "${ACTION}" != "prettylist" ]; then
+        REPO_NAME="g910-gkey-macro-support"
+        REPO_URL="https://github.com/GHMusicalCoder/${REPO_NAME}.git"
+        FINAL_LOCATION="$HOME/Applications/GitApps"
+        set_appversion
+    fi
     PRETTYNAME="Logitech G910 Key Mapper"
     WEBSITE="https://github.com/JSubelj/g910-gkey-macro-support"
     SUMMARY="Linux keyboard mapper for Logitech G910 G-Keys."
@@ -333,12 +336,12 @@ function app_g910-keys() {
 
 function app_sweet-dark() {
     METHOD="zip"
-    get_release_info "https://api.github.com/repos/EliverLara/Sweet/releases/latest"
-    set_appversion
     if [ "${ACTION}" != "prettylist" ]; then
+        get_release_info "https://api.github.com/repos/EliverLara/Sweet/releases/latest"
         URL=$(grep "browser_download_url.*Dark.zip" "${CACHE}/${APP}.json" | head -n1 | cut -d'"' -f4)
         ZIPFILE="${URL##*/}"
         FINAL_LOCATION="$HOME/.themes"
+        set_appversion
     fi
     PRETTYNAME="Sweet Dark Theme"
     WEBSITE="https://www.gnome-look.org/p/1253385/"
@@ -347,16 +350,15 @@ function app_sweet-dark() {
 
 function app_candy-icons() {
     METHOD="zip"
-    APPVERSION="$(curl -s "https://github.com/EliverLara/candy-icons" | grep -m3 "<strong>" | tail -n 1 | cut -d'>' -f2 | cut -d'<' -f1)"
     if [ "${ACTION}" != "prettylist" ]; then
         URL="https://github.com/EliverLara/candy-icons/archive/refs/heads/master.zip"
         ZIPFILE="${URL##*/}"
         FINAL_LOCATION="$HOME/.icons"
+        APPVERSION="$(curl -s "https://github.com/EliverLara/candy-icons" | grep -m3 "<strong>" | tail -n 1 | cut -d'>' -f2 | cut -d'<' -f1)"
     fi
     PRETTYNAME="Candy Icons"
     WEBSITE="https://www.pling.com/p/1305251/"
     SUMMARY="A Candy neon-istic icon theme."
-
 }
 
 function app_sweet-folder() {
