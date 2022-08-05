@@ -93,8 +93,8 @@ cog.out(pretty_list)
 ]]] -->
 | Source   | Install Name   | Application Name   | Description   |
 | :------: | :------------: | :----------------: | :-----------: |
-| [<img src=".icons/icon-trowel.svg" align="top" width="20" style="background-color:white;padding:20px;" />]() | `btop` | <b>btop++</b> | <i></i> |
-| [<img src=".icons/icon-zipper.svg" align="top" width="20" style="background-color:white;padding:20px;" />]() | `bw-cli` | <b>Bitwarden CLI</b> | <i></i> |
+| [<img src=".icons/icon-trowel.svg" align="top" width="20" style="background-color:white;padding:20px;" />](https://github.com/aristocratos/btop) | `btop` | <b>btop++</b> | <i>Resource monitor that shows usage and stats for processor, memory, disks, network and processes.  Written in C++</i> |
+| [<img src=".icons/icon-zipper.svg" align="top" width="20" style="background-color:white;padding:20px;" />](https://www.bitwarden.com) | `bw-cli` | <b>Bitwarden CLI</b> | <i>A command line version of the Bitwarden Password Manager client.</i> |
 | [<img src=".icons/icon-zipper.svg" align="top" width="20" style="background-color:white;padding:20px;" />]() | `candy-icons` | <b>Candy Icons by Elivira</b> | <i></i> |
 | [<img src=".icons/icon-github.svg" align="top" width="20" style="background-color:white;padding:20px;" />]() | `g910-keys` | <b>Logitech G910 Key Mapper</b> | <i></i> |
 | [<img src=".icons/icon-zipper.svg" align="top" width="20" style="background-color:white;padding:20px;" />]() | `nerd-fonts` | <b>Nerd Fonts</b> | <i></i> |

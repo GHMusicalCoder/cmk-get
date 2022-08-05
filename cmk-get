@@ -85,7 +85,7 @@ function messenger() {
 }
 
 function is_installed() {
-    if [ -f "${CACHE}/installed_${1}*" ]; then
+    if [ -f "${CACHE}/installed_${1}"* ]; then
         return 0;
     else
         return 1;
@@ -130,6 +130,7 @@ function validator() {
 
     export APPVERSION=""
     export FINAL_LOCATION=""
+    export MAKE_PREFIX=""
     export METHOD=""
     export PRETTYNAME=""
     export SUMMARY=""
@@ -149,6 +150,14 @@ function applist_csv() {
         echo "\"${APP}\",\"${PRETTYNAME}\",\"${APPVERSION}\",\"${METHOD}\",\"${SUMMARY}\""
     done
    
+}
+
+function set_appversion() {
+    if is_installed "${APP}"; then
+        APPVERSION=$(grep "tag_name.*" "${CACHE}/${APP}.json" | cut -d'"' -f4 | cut --complement -c 1)
+    else
+        APPVERSION="Not Installed"
+    fi
 }
 
 function applist_md() {
@@ -207,6 +216,18 @@ function install_zip() {
     # create the install record for the zip
     ${EP} touch "${CACHE}/installed_${APP}_${APPVERSION}"
 }
+
+function install_make() {
+    download_file
+    ${EP} mkdir -p "${CACHE}/${APP}"
+    ${EP} tar -xjf "${CACHE}/${ZIPFILE}" -C "${CACHE}/${APP}"
+    cd "${CACHE}/${APP}"
+    make install ${MAKE_PREFIX} 2>/dev/null
+
+    # create the install record for the zip
+    ${EP} touch "${CACHE}/installed_${APP}_${APPVERSION}"
+}
+
 ###############################################################################
 ## end of helper functions
 ###############################################################################
@@ -216,9 +237,9 @@ function install_zip() {
 ###############################################################################
 function app_bw-cli() {
     get_release_info "https://api.github.com/repos/bitwarden/cli/releases/latest"
+    set_appversion
     if [ "${ACTION}" != "prettylist" ]; then
         URL=$(grep "browser_download_url.*.zip" "${CACHE}/${APP}.json" | head -n1 | cut -d'"' -f4)
-        APPVERSION=$(grep "tag_name.*" "${CACHE}/${APP}.json" | cut -d'"' -f4 | cut --complement -c 1)
         ZIPFILE="${URL##*/}"
         UNZIP_NAME="bw"
         FINAL_LOCATION="$HOME/.local/bin"
@@ -230,8 +251,17 @@ function app_bw-cli() {
 }
 
 function app_btop() {
+    get_release_info "https://api.github.com/repos/aristocratos/btop/releases/latest"
+    set_appversion
+    if [ "${ACTION}" != "prettylist" ]; then
+        URL=$(grep "browser_download_url.*-x86_64-linux-musl.tbz" "${CACHE}/${APP}.json" | head -n1 | cut -d'"' -f4)
+        ZIPFILE="${URL##*/}"
+        MAKE_PREFIX="PREFIX=$HOME/.local"
+    fi    
     PRETTYNAME="btop++"
     METHOD="make"
+    WEBSITE="https://github.com/aristocratos/btop"
+    SUMMARY="Resource monitor that shows usage and stats for processor, memory, disks, network and processes.  Written in C++"
 }
 
 function app_g910-keys() {
@@ -316,6 +346,7 @@ case "${ACTION}" in
         elevate_privs
         validator "${1}"
         case ${METHOD} in
+            make) install_make;;
             zip) install_zip;;
         esac;;
     list)
