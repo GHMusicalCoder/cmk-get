@@ -3,7 +3,7 @@ LC_ALL=C
 
 # this is inspired by and deeply pulled from deb-get (https://github.com/wimpysworld/deb-get) by Martin Wimpress
 
-readonly VERSION="0.0.12"
+readonly VERSION="0.0.13"
 
 function usage() {
 cat <<HELP
@@ -133,6 +133,8 @@ function validator() {
     export MAKE_PREFIX=""
     export METHOD=""
     export PRETTYNAME=""
+    export REPO_NAME=""
+    export REPO_URL=""
     export SUMMARY=""
     export UNZIP_NAME=""
     export URL=""
@@ -228,6 +230,18 @@ function install_make() {
     ${EP} touch "${CACHE}/installed_${APP}_${APPVERSION}"
 }
 
+function install_repo() {
+    # pull down repo
+    local GIT_CMD=""
+    if [ ${FINAL_LOCATION:0:5} == "/home" ]; then
+        GIT_CMD="git clone"
+    else
+        GIT_CMD="${EP} git clone"
+    fi
+    ${GIT_CMD} "${REPO_URL}" ${FINAL_LOCATION}
+    
+}
+
 ###############################################################################
 ## end of helper functions
 ###############################################################################
@@ -265,8 +279,14 @@ function app_btop() {
 }
 
 function app_g910-keys() {
+    # this is pulling from my personal fork (which is unchanged from the below website)
+    REPO_NAME="g910-gkey-macro-support"
+    REPO_URL="https://github.com/GHMusicalCoder/${REPO_NAME}.git"
+    FINAL_LOCATION="$HOME/Applications/GitApps"
     PRETTYNAME="Logitech G910 Key Mapper"
     METHOD="repo"
+    WEBSITE="https://github.com/JSubelj/g910-gkey-macro-support"
+    SUMMARY="Linux keyboard mapper for Logitech G910 G-Keys."
 }
 
 function app_sweet-dark-theme() {
@@ -347,6 +367,7 @@ case "${ACTION}" in
         validator "${1}"
         case ${METHOD} in
             make) install_make;;
+            repo) install_repo;;
             zip) install_zip;;
         esac;;
     list)
