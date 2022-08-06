@@ -3,7 +3,7 @@ LC_ALL=C
 
 # this is inspired by and deeply pulled from deb-get (https://github.com/wimpysworld/deb-get) by Martin Wimpress
 
-readonly VERSION="0.0.20"
+readonly VERSION="0.0.21"
 
 function usage() {
 cat <<HELP
@@ -129,6 +129,7 @@ function validator() {
     fi
 
     export APPVERSION=""
+    export CURL_ADDRESS=""
     export FINAL_LOCATION=""
     export MAKE_PREFIX=""
     export METHOD=""
@@ -157,7 +158,7 @@ function applist_csv() {
 function set_appversion() {
     if ${METHOD} == "repo"; then
         # pull appversion from readme.md file
-        APPVERSION=$(grep "Project version: .*" "${FINAL_LOCATION}/${REPO_NAME}/README.md" | cut -d':' -f2 | cut -d')' -f1 | cut --complement -c -2)
+        APPVERSION="$(curl -s "${CURL_ADDRESS}" | grep -m3 "<strong>" | tail -n 1 | cut -d'>' -f2 | cut -d'<' -f1)"
     else
         if [ -e "${CACHE}/${APP}.json" ]; then
             APPVERSION=$(grep "tag_name.*" "${CACHE}/${APP}.json" | cut -d'"' -f4 | cut --complement -c 1)
@@ -243,15 +244,9 @@ function install_make() {
 
 function install_repo() {
     # pull down repo
-    local GIT_CMD=""
-    if [ ${FINAL_LOCATION:0:5} == "/home" ]; then
-        GIT_CMD="git clone"
-    else
-        GIT_CMD="${EP} git clone"
-    fi
-    ${GIT_CMD} "${REPO_URL}" ${FINAL_LOCATION}
+    git clone "${REPO_URL}" ${HOME_REPO}
 
-    set_appversion
+    ${EP} touch "${CACHE}/installed_${APP}_${APPVERSION}"
 }
 
 function followup_g910() {
@@ -268,22 +263,28 @@ function followup_g910() {
     ${EP} systemctl enable --now g910-keys
 }
 
-function followup_sweet() {
+function followup_sweet-dark() {
     gsettings set org.gnome.desktop.interface gtk-theme "Sweet-Dark"
     gsettings set org.gnome.desktop.wm.preferences theme "Sweet-Dark"
 }
 
-function followup_bw() {
+function followup_bw-cli() {
     chmod 755 "${FINAL_LOCATION}/${UNZIP_NAME}"
 }
 
-function followup_candy() {
+function followup_candy-icons() {
     # icon zips into candy-icons-master so we want to rename to just candy-icons
     mv "${HOME}/.icons/candy-icons-master" "${HOME}/.icons/candy-icons"
 
     gsettings set org.gnome.desktop.interface icon-theme candy-icons
 }
 
+function followup_sweet-folder() {
+    local FOLDER="Sweet-Purple"
+    cp "${HOME_REPO}/${REPO_NAME}/${FOLDER}" "${FINAL_LOCATION}/${FOLDER}"
+    sed -i 's/^Inherits=.*/Inherits=candy-icons,breeze-dark,gnome,ubuntu-mono-dark,Mint-X,elementary,gnome,hicolor' \
+        "${FINAL_LOCATION}/${FOLDER}/index.theme"
+}
 ###############################################################################
 ## end of helper functions
 ###############################################################################
@@ -326,8 +327,7 @@ function app_g910-keys() {
     if [ "${ACTION}" != "prettylist" ]; then
         REPO_NAME="g910-gkey-macro-support"
         REPO_URL="https://github.com/GHMusicalCoder/${REPO_NAME}.git"
-        FINAL_LOCATION="$HOME/Applications/GitApps"
-        set_appversion
+        CURL_ADDRESS="https://github.com/JSubelj/g910-gkey-macro-support"
     fi
     PRETTYNAME="Logitech G910 Key Mapper"
     WEBSITE="https://github.com/JSubelj/g910-gkey-macro-support"
@@ -344,17 +344,14 @@ function app_sweet-dark() {
         set_appversion
     fi
     PRETTYNAME="Sweet Dark Theme"
-    WEBSITE="https://www.gnome-look.org/p/1253385/"
-    SUMMARY="Colorful Gtk3.20+ themes"
-}
+    WEBSITE="https://www.gnome-look.org/p/1253385/"        COPY_LOCATTION="$HOME/.themes"
 
-function app_candy-icons() {
-    METHOD="zip"
     if [ "${ACTION}" != "prettylist" ]; then
         URL="https://github.com/EliverLara/candy-icons/archive/refs/heads/master.zip"
         ZIPFILE="${URL##*/}"
         FINAL_LOCATION="$HOME/.icons"
-        APPVERSION="$(curl -s "https://github.com/EliverLara/candy-icons" | grep -m3 "<strong>" | tail -n 1 | cut -d'>' -f2 | cut -d'<' -f1)"
+        CURL_ADDRESS="https://github.com/EliverLara/candy-icons"
+        set_appversion
     fi
     PRETTYNAME="Candy Icons"
     WEBSITE="https://www.pling.com/p/1305251/"
@@ -362,8 +359,17 @@ function app_candy-icons() {
 }
 
 function app_sweet-folder() {
-    METHOD="zip"
-    PRETTYNAME="Sweet Purple Folders by Elivira"
+    METHOD="repo"
+    if [ "${ACTION}" != "prettylist" ]; then
+        REPO_NAME="Sweet-folders"
+        REPO_URL="https://github.com/EliverLara/${REPO_NAME}.git"
+        FINAL_LOCATION="$HOME/.icons"
+        CURL_ADDRESS="https://github.com/EliverLara/Sweet-folders"
+        set_appversion
+    fi
+    PRETTYNAME="Sweet Folders - Purple"
+    WEBSITE="https://www.opendesktop.org/p/1284047"
+    SUMMARY="Folder icons for the Sweet GTK theme."
 }
 
 function app_nerd-fonts () {
@@ -379,6 +385,7 @@ function app_nerd-fonts () {
 ###############################################################################
 readonly APPS=($(declare -F | grep app_ | sed 's|declare -f app_||g' | sort))
 readonly CACHE="/var/cache/cmk-get"
+readonly HOME_REPO="$HOME/Applications/GitApps"
 
 if [ ! -d "${CACHE}" ]; then
     elevate_privs
@@ -433,10 +440,8 @@ case "${ACTION}" in
             zip) install_zip;;
         esac
         case ${APP} in
-            bw-cli)         followup_bw;;
-            candy-icons)    followup_candy;;
-            g910-keys)      followup_g910;;
-            sweet-dark)     followup_sweet;;
+            bw-cli|candy-icons|g910-keys|sweet-dark|sweet-folder)
+                followup_${APP};;
         esac;;
     list)
         list_apps;;

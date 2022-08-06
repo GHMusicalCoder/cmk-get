@@ -88,9 +88,8 @@ cog.out(pretty_list)
 | :------: | :------------: | :----------------: | :-----------: |
 | [<img src=".icons/icon-trowel.svg" align="top" width="20" style="background-color:white;padding:20px;" />](https://github.com/aristocratos/btop) | `btop` | <b>btop++</b> | <i>Resource monitor that shows usage and stats for processor, memory, disks, network and processes.  Written in C++</i> |
 | [<img src=".icons/icon-zipper.svg" align="top" width="20" style="background-color:white;padding:20px;" />](https://www.bitwarden.com) | `bw-cli` | <b>Bitwarden CLI</b> | <i>A command line version of the Bitwarden Password Manager client.</i> |
-| [<img src=".icons/icon-zipper.svg" align="top" width="20" style="background-color:white;padding:20px;" />](https://www.pling.com/p/1305251/) | `candy-icons` | <b>Candy Icons</b> | <i>A Candy neon-istic icon theme.</i> |
 | [<img src=".icons/icon-github.svg" align="top" width="20" style="background-color:white;padding:20px;" />](https://github.com/JSubelj/g910-gkey-macro-support) | `g910-keys` | <b>Logitech G910 Key Mapper</b> | <i>Linux keyboard mapper for Logitech G910 G-Keys.</i> |
 | [<img src=".icons/icon-zipper.svg" align="top" width="20" style="background-color:white;padding:20px;" />]() | `nerd-fonts` | <b>Nerd Fonts</b> | <i></i> |
-| [<img src=".icons/icon-zipper.svg" align="top" width="20" style="background-color:white;padding:20px;" />](https://www.gnome-look.org/p/1253385/) | `sweet-dark` | <b>Sweet Dark Theme</b> | <i>Colorful Gtk3.20+ themes</i> |
-| [<img src=".icons/icon-zipper.svg" align="top" width="20" style="background-color:white;padding:20px;" />]() | `sweet-folder` | <b>Sweet Purple Folders by Elivira</b> | <i></i> |
+| [<img src=".icons/icon-zipper.svg" align="top" width="20" style="background-color:white;padding:20px;" />](https://www.pling.com/p/1305251/) | `sweet-dark` | <b>Candy Icons</b> | <i>A Candy neon-istic icon theme.</i> |
+| [<img src=".icons/icon-github.svg" align="top" width="20" style="background-color:white;padding:20px;" />](https://www.opendesktop.org/p/1284047) | `sweet-folder` | <b>Sweet Folders - Purple</b> | <i>Folder icons for the Sweet GTK theme.</i> |
 <!-- [[[end]]] -->
