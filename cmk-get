@@ -391,6 +391,9 @@ if [ ! -d "${CACHE}" ]; then
     elevate_privs
     ${EP} mkdir -p "${CACHE}" 2>/dev/null
     ${EP} chmod 755 "${CACHE}" 2>/dev/null
+
+    # since we are in here - let's make sure our necessary programs are installed
+    ${EP} apt install -y git wget curl make 1>/dev/null 2>&1
 fi
 
 if [ -n "${1}" ]; then
