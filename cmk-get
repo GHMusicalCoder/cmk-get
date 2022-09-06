@@ -85,18 +85,27 @@ function messenger() {
 }
 
 function is_installed() {
-    if [ -f "${CACHE}/installed_${1}"* ]; then
+    if test -f "${CACHE}/installed_${1}_"*; then
         return 0;
     else
         return 1;
     fi
 }
 
+function set_installed_version() {
+    if test -f "${CACHE}/installed_${1}_"*; then
+        INSTALLED_VER=$(ls "$CACHE/installed_${1}_"* | cut -d "_" -f3)
+    else
+        INSTALLED_VER=""
+    fi
+}
+
 function list_apps() {
     local PAD='                              '
-    local STATUS="installed"
     for APP in "${APPS[@]}"; do
         if is_installed "${APP}"; then
+            set_installed_version ${APP}
+            local STATUS="${INSTALLED_VER} Installed"
             printf "%s %s [ ${STATUS} ]\n" "${APP}" "${PAD:${#APP}}"
         else
             echo "${APP}"
@@ -131,6 +140,7 @@ function validator() {
     export APPVERSION=""
     export CURL_ADDRESS=""
     export FINAL_LOCATION=""
+    export INSTALLED_VER=""
     export MAKE_PREFIX=""
     export METHOD=""
     export PRETTYNAME=""
@@ -143,7 +153,7 @@ function validator() {
     export ZIPFILE=""
 
     # Source the variables
-    app_${APP} 2>/dev/null
+    app_${APP} "${NO_OUTPUT}"
 }
 
 function applist_csv() {
@@ -195,11 +205,11 @@ function get_release_info() {
         if [ ! -e "${CACHE}/${APP}.json" ] || test "$(find "${CACHE}/${APP}.json" -mmin +60)"; then
             if ! ${EP} wget -q "${1}" -O "${CACHE}/${APP}.json"; then
                 messenger warn "Updating ${CACHE}/${APP}.json failed.  Deleting it."
-                ${EP} rm "${CACHE}/{$APP}.json" 2>/dev/null
+                ${EP} rm "${CACHE}/{$APP}.json" "${NO_OUTPUT}"
             fi
             if [ -f "${CACHE}/${APP}.json" ] && grep "API rate limit exceeded" "${CACHE}/${APP}.json"; then
                 messenger warn "Updating ${CACHE}/${APP}.json exceed GitHub API limits. Deleting it."
-                ${EP} rm "${CACHE}/${APP}.json" 2>/dev/null
+                ${EP} rm "${CACHE}/${APP}.json" "${NO_OUTPUT}"
             fi
         fi
     fi
@@ -210,7 +220,7 @@ function download_file() {
     if [ ! -f "${CACHE}/${ZIPFILE}" ]; then
         if ! ${EP} wget --quiet --continue --show-progress --progress=bar:force:noscroll "${URL}" -O "${CACHE}/${ZIPFILE}"; then
             messenger error "Failed to download ${ZIPFILE}.  Deleting ${CACHE}/${ZIPFILE}"
-            ${EP} rm "${CACHE}/${ZIPFILE}" 2>/dev/null
+            ${EP} rm "${CACHE}/${ZIPFILE}" "${NO_OUTPUT}"
         fi
     fi
 }
@@ -219,8 +229,10 @@ function install_zip() {
     # if final location doesn't exist - create it
     if [ ! -d "${FINAL_LOCATION}" ]; then
         if [ ${FINAL_LOCATION:0:5} == "/home" ]; then
+            messenger info "Creating ${FINAL_LOCATION}"
             mkdir -p "${FINAL_LOCATION}"
         else 
+            messenger info "Creating ${FINAL_LOCATION} with privlidge"
             sudo mkdir -p "${FINAL_LOCATION}"
         fi
     fi
@@ -236,7 +248,7 @@ function install_make() {
     ${EP} mkdir -p "${CACHE}/${APP}"
     ${EP} tar -xjf "${CACHE}/${ZIPFILE}" -C "${CACHE}/${APP}"
     cd "${CACHE}/${APP}"
-    make install ${MAKE_PREFIX} 2>/dev/null
+    make install ${MAKE_PREFIX} "${NO_OUTPUT}"
 
     # create the install record for the zip
     ${EP} touch "${CACHE}/installed_${APP}_${APPVERSION}"
@@ -259,7 +271,7 @@ function followup_g910() {
     fi
     modprobe uinput
     ${CMD} +x "${DIR}/installer.sh"
-    ${EP} "${DIR}/installer.sh" 2>/dev/null
+    ${EP} "${DIR}/installer.sh" "${NO_OUTPUT}"
     ${EP} systemctl enable --now g910-keys
 }
 
@@ -386,14 +398,15 @@ function app_nerd-fonts () {
 readonly APPS=($(declare -F | grep app_ | sed 's|declare -f app_||g' | sort))
 readonly CACHE="/var/cache/cmk-get"
 readonly HOME_REPO="$HOME/Applications/GitApps"
+readonly NO_OUTPUT="1>/dev/null 2>&1"
 
 if [ ! -d "${CACHE}" ]; then
     elevate_privs
-    ${EP} mkdir -p "${CACHE}" 2>/dev/null
-    ${EP} chmod 755 "${CACHE}" 2>/dev/null
+    ${EP} mkdir -p "${CACHE}" "${NO_OUTPUT}"
+    ${EP} chmod 755 "${CACHE}" "${NO_OUTPUT}"
 
     # since we are in here - let's make sure our necessary programs are installed
-    ${EP} apt install -y git wget curl make 1>/dev/null 2>&1
+    ${EP} apt install -y git wget curl make "${NO_OUTPUT}"
 fi
 
 if [ -n "${1}" ]; then
