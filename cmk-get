@@ -3,7 +3,7 @@ LC_ALL=C
 
 # this is inspired by and deeply pulled from deb-get (https://github.com/wimpysworld/deb-get) by Martin Wimpress
 
-readonly VERSION="0.0.21"
+readonly VERSION="0.1.1"
 
 function usage() {
 cat <<HELP
@@ -76,6 +76,8 @@ function messenger() {
         info) echo -e " [${BLUE}+${RESET}] ${CYAN}${MSG}${RESET}";;
         progress) echo -e " [${GREEN}+${RESET}] ${CYAN}${MSG}${RESET}";;
         recommend) echo -e " [${MAGENTA}!${RESET}] ${MAGENTA}${MSG}${RESET}";;
+        match) echo -e " [${MAGENTA}!${RESET}] ${MAGENTA}${MSG}${RESET}"
+                exit 1;;
         warn) echo -e " [${YELLOW}*${RESET}] ${YELLOW}WARNING! ${MSG}${RESET}";;
         error) echo -e " [${RED}!${RESET}] ${RED}ERROR! ${MSG}${RESET}";;
         fatal) echo -e " [${RED}!${RESET}] ${RED}ERROR! ${MSG}${RESET}"
@@ -154,6 +156,13 @@ function validator() {
 
     # Source the variables
     app_${APP} "${NO_OUTPUT}"
+    set_installed_version ${APP}
+    case ${ACTION} in
+        install|update|upgrade)
+            if [ ${APPVERSION} == ${INSTALLED_VER} ]; then
+                messenger match "Current version of ${APP} already installed."
+            fi;;
+    esac;
 }
 
 function applist_csv() {
@@ -166,7 +175,7 @@ function applist_csv() {
 }
 
 function set_appversion() {
-    if ${METHOD} == "repo"; then
+    if [[ ${METHOD} == "repo" ]]; then
         # pull appversion from readme.md file
         APPVERSION="$(curl -s "${CURL_ADDRESS}" | grep -m3 "<strong>" | tail -n 1 | cut -d'>' -f2 | cut -d'<' -f1)"
     else
@@ -201,9 +210,9 @@ function show_appinfo() {
 function get_release_info() {
     # do not process releases while generating lists
     if [ "${ACTION}" == "install" ] || [ "${ACTION}" == "update" ]; then
-        messenger progress "Updating ${CACHE}/${APP}.json"
         if [ ! -e "${CACHE}/${APP}.json" ] || test "$(find "${CACHE}/${APP}.json" -mmin +60)"; then
-            if ! ${EP} wget -q "${1}" -O "${CACHE}/${APP}.json"; then
+            messenger progress "Updating ${CACHE}/${APP}.json"
+            if ! ${EP} wget -q --no-use-server-timestamp "${1}" -O "${CACHE}/${APP}.json"; then
                 messenger warn "Updating ${CACHE}/${APP}.json failed.  Deleting it."
                 ${EP} rm "${CACHE}/{$APP}.json" "${NO_OUTPUT}"
             fi
@@ -297,6 +306,14 @@ function followup_sweet-folder() {
     sed -i 's/^Inherits=.*/Inherits=candy-icons,breeze-dark,gnome,ubuntu-mono-dark,Mint-X,elementary,gnome,hicolor' \
         "${FINAL_LOCATION}/${FOLDER}/index.theme"
 }
+
+function remove_bw-cli() {
+    rm -rf "${FINAL_LOCATION}/${UNZIP_NAME}"
+    ${EP} rm -rf "${CACHE}/${APP}"
+    ${EP} rm -rf "${CACHE}/${APP}.json"
+    ${EP} rm -rf "${CACHE}/installed_${APP}_"*
+}
+
 ###############################################################################
 ## end of helper functions
 ###############################################################################
@@ -399,6 +416,7 @@ readonly APPS=($(declare -F | grep app_ | sed 's|declare -f app_||g' | sort))
 readonly CACHE="/var/cache/cmk-get"
 readonly HOME_REPO="$HOME/Applications/GitApps"
 readonly NO_OUTPUT="1>/dev/null 2>&1"
+readonly ACTIVE_LIST="install remove update upgrade"
 
 if [ ! -d "${CACHE}" ]; then
     elevate_privs
@@ -462,7 +480,9 @@ case "${ACTION}" in
     list)
         list_apps;;
     remove)
-        echo "not yet implemented...";;
+        elevate_privs
+        validator "${1}"
+
     show)
         validator "${1}"
         show_appinfo;;
