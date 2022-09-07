@@ -17,10 +17,10 @@ cmk-get provides a high-level commandline interface to easily install and update
 published in 3rd party github/gitlab releases, or other sites via direct download.
 
 update
-    update is used to resynchronize the app index files from their sources.
+    update checks installed cmk-get apps for newer versions (all installed apps).
 
 upgrade
-    upgrade is used to install the newest versions of all apps currently installed on the system.
+    upgrade will update any cmk-get apps that have newer versions (all installed apps with updates).
 
 install
     install is followed by one app desired for installation or upgrading.

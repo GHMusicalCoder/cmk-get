@@ -42,10 +42,10 @@ cmk-get provides a high-level commandline interface to easily install and update
 published in 3rd party github/gitlab releases, or other sites via direct download.
 
 update
-    update is used to resynchronize the app index files from their sources.
+    update checks installed cmk-get apps for newer versions (all installed apps).
 
 upgrade
-    upgrade is used to install the newest versions of all apps currently installed on the system.
+    upgrade will update any cmk-get apps that have newer versions (all installed apps with updates).
 
 install
     install is followed by one app desired for installation or upgrading.
@@ -88,7 +88,7 @@ cog.out(pretty_list)
 | :------: | :------------: | :----------------: | :-----------: |
 | [<img src=".icons/icon-trowel.svg" align="top" width="20" style="background-color:white;padding:20px;" />](https://github.com/aristocratos/btop) | `btop` | <b>btop++</b> | <i>Resource monitor that shows usage and stats for processor, memory, disks, network and processes.  Written in C++</i> |
 | [<img src=".icons/icon-zipper.svg" align="top" width="20" style="background-color:white;padding:20px;" />](https://www.bitwarden.com) | `bw-cli` | <b>Bitwarden CLI</b> | <i>A command line version of the Bitwarden Password Manager client.</i> |
-| [<img src=".icons/icon-github.svg" align="top" width="20" style="background-color:white;padding:20px;" />](https://github.com/JSubelj/g910-gkey-macro-support) | `g910-keys` | <b>Logitech G910 Key Mapper</b> | <i>Linux keyboard mapper for Logitech G910 G-Keys.</i> |
+| [<img src=".icons/icon-github.svg" align="top" width="20" style="background-color:white;padding:20px;" />](https://github.com/JSubelj/g910-gkey-macro-support) | `g910-gkeys` | <b>Logitech G910 Key Mapper</b> | <i>Linux keyboard mapper for Logitech G910 G-Keys.</i> |
 | [<img src=".icons/icon-zipper.svg" align="top" width="20" style="background-color:white;padding:20px;" />]() | `nerd-fonts` | <b>Nerd Fonts</b> | <i></i> |
 | [<img src=".icons/icon-zipper.svg" align="top" width="20" style="background-color:white;padding:20px;" />](https://www.pling.com/p/1305251/) | `sweet-dark` | <b>Candy Icons</b> | <i>A Candy neon-istic icon theme.</i> |
 | [<img src=".icons/icon-github.svg" align="top" width="20" style="background-color:white;padding:20px;" />](https://www.opendesktop.org/p/1284047) | `sweet-folder` | <b>Sweet Folders - Purple</b> | <i>Folder icons for the Sweet GTK theme.</i> |
