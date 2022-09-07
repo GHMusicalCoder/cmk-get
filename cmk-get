@@ -3,7 +3,7 @@ LC_ALL=C
 
 # this is inspired by and deeply pulled from deb-get (https://github.com/wimpysworld/deb-get) by Martin Wimpress
 
-readonly VERSION="0.1.1"
+readonly VERSION="0.1.3"
 
 function usage() {
 cat <<HELP
@@ -159,7 +159,7 @@ function validator() {
     set_installed_version ${APP}
     case ${ACTION} in
         install|update|upgrade)
-            if [ ${APPVERSION} == ${INSTALLED_VER} ]; then
+            if [[ ${APPVERSION} == ${INSTALLED_VER} ]]; then
                 messenger match "Current version of ${APP} already installed."
             fi;;
     esac;
@@ -290,7 +290,8 @@ function followup_sweet-dark() {
 }
 
 function followup_bw-cli() {
-    chmod 755 "${FINAL_LOCATION}/${UNZIP_NAME}"
+    ${EP} chown $USER:$USER "${FINAL_LOCATION}/${UNZIP_NAME}"
+    ${EP} chmod 755 "${FINAL_LOCATION}/${UNZIP_NAME}"
 }
 
 function followup_candy-icons() {
@@ -308,10 +309,17 @@ function followup_sweet-folder() {
 }
 
 function remove_bw-cli() {
-    rm -rf "${FINAL_LOCATION}/${UNZIP_NAME}"
-    ${EP} rm -rf "${CACHE}/${APP}"
-    ${EP} rm -rf "${CACHE}/${APP}.json"
-    ${EP} rm -rf "${CACHE}/installed_${APP}_"*
+    if is_installed ${1}; then
+        messenger progress "Removing ${1} from system..."
+        validator ${1}
+        rm -rf "${FINAL_LOCATION}/${UNZIP_NAME}"
+        ${EP} rm -rf "${CACHE}/${APP}"
+        ${EP} rm -rf "${CACHE}/${ZIPFILE}"
+        ${EP} rm -rf "${CACHE}/${APP}.json"
+        ${EP} rm -rf "${CACHE}/installed_${APP}_"*
+    else
+        messenger fatal "${1} is not installed..."
+    fi
 }
 
 ###############################################################################
@@ -481,8 +489,8 @@ case "${ACTION}" in
         list_apps;;
     remove)
         elevate_privs
-        validator "${1}"
-
+        #validator "${1}"
+        remove_${1} ${1};;
     show)
         validator "${1}"
         show_appinfo;;
