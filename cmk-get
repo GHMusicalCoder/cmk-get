@@ -411,8 +411,11 @@ function app_sweet-dark() {
         set_appversion
     fi
     PRETTYNAME="Sweet Dark Theme"
-    WEBSITE="https://www.gnome-look.org/p/1253385/"        COPY_LOCATTION="$HOME/.themes"
+    WEBSITE="https://www.gnome-look.org/p/1253385/"        
+    COPY_LOCATTION="$HOME/.themes"
+}
 
+function app_candy-icons() {
     if [ "${ACTION}" != "prettylist" ]; then
         URL="https://github.com/EliverLara/candy-icons/archive/refs/heads/master.zip"
         ZIPFILE="${URL##*/}"
