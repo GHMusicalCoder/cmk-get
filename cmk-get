@@ -3,7 +3,7 @@ LC_ALL=C
 
 # this is inspired by and deeply pulled from deb-get (https://github.com/wimpysworld/deb-get) by Martin Wimpress
 
-readonly VERSION="0.1.3"
+readonly VERSION="0.3.3"
 
 function usage() {
 cat <<HELP
@@ -242,9 +242,11 @@ function install_zip() {
             mkdir -p "${FINAL_LOCATION}"
         else 
             messenger info "Creating ${FINAL_LOCATION} with privlidge"
-            sudo mkdir -p "${FINAL_LOCATION}"
+            ${EP} mkdir -p "${FINAL_LOCATION}"
         fi
     fi
+
+    messenger progress "Installing ${APP}..."
     download_file
     ${EP} unzip -qq "${CACHE}/${ZIPFILE}" -d "${FINAL_LOCATION}"
 
@@ -253,35 +255,38 @@ function install_zip() {
 }
 
 function install_make() {
+    messenger progress "Installing ${APP}..."
     download_file
     ${EP} mkdir -p "${CACHE}/${APP}"
     ${EP} tar -xjf "${CACHE}/${ZIPFILE}" -C "${CACHE}/${APP}"
     cd "${CACHE}/${APP}"
-    make install ${MAKE_PREFIX} "${NO_OUTPUT}"
+    make install ${MAKE_PREFIX} 1>/dev/null 2>&1
 
     # create the install record for the zip
     ${EP} touch "${CACHE}/installed_${APP}_${APPVERSION}"
 }
 
 function install_repo() {
+    messenger progress "Installing ${APP}..."
     # pull down repo
-    git clone "${REPO_URL}" ${HOME_REPO}
+    git clone "${REPO_URL}" "${HOME_REPO}/${REPO_NAME}" 1>/dev/null 2>&1
 
     ${EP} touch "${CACHE}/installed_${APP}_${APPVERSION}"
 }
 
-function followup_g910() {
-    local DIR="${FINAL_LOCATION}/${REPO_NAME}"
+function followup_g910-gkeys() {
+    local DIR="${HOME_REPO}/${REPO_NAME}"
     local CMD=""
-    if [ ${FINAL_LOCATION:0:5} == "/home" ]; then
+    if [ ${HOME_REPO:0:5} == "/home" ]; then
         CMD="chmod"
     else
         CMD="${EP} chmod"
     fi
     modprobe uinput
+    cd "${DIR}"
     ${CMD} +x "${DIR}/installer.sh"
-    ${EP} "${DIR}/installer.sh" "${NO_OUTPUT}"
-    ${EP} systemctl enable --now g910-keys
+    ${EP} ./installer.sh 1>/dev/null 2>&1
+    ${EP} systemctl enable --now g910-gkeys 1>/dev/null 2>&1
 }
 
 function followup_sweet-dark() {
@@ -308,19 +313,43 @@ function followup_sweet-folder() {
         "${FINAL_LOCATION}/${FOLDER}/index.theme"
 }
 
-function remove_bw-cli() {
-    if is_installed ${1}; then
-        messenger progress "Removing ${1} from system..."
-        validator ${1}
-        rm -rf "${FINAL_LOCATION}/${UNZIP_NAME}"
+function remove_cache_info() {
+    if [ "${METHOD}" != "repo" ]; then
         ${EP} rm -rf "${CACHE}/${APP}"
         ${EP} rm -rf "${CACHE}/${ZIPFILE}"
         ${EP} rm -rf "${CACHE}/${APP}.json"
-        ${EP} rm -rf "${CACHE}/installed_${APP}_"*
+    fi
+    ${EP} rm -rf "${CACHE}/installed_${APP}_"*
+}
+
+function remove_app() {
+    if is_installed ${1}; then
+        messenger progress "Removing ${1} from system..."
+        validator ${1}
+        remove_${1} ${1}
     else
         messenger fatal "${1} is not installed..."
     fi
 }
+
+function remove_bw-cli() {   
+    rm -rf "${FINAL_LOCATION}/${UNZIP_NAME}"
+    remove_cache_info
+}
+
+function remove_btop() {
+    cd "${CACHE}/${APP}"
+    make uninstall ${MAKE_PREFIX} 1>/dev/null 2>&1
+    remove_cache_info
+}
+
+function remove_g910-gkeys() {
+    ${EP} systemctl disable --now ${1} 1>/dev/null 2>&1
+    ${EP} rm -rf /etc/${1}
+    ${EP} rm -rf ${HOME_REPO}/${REPO_NAME}
+    remove_cache_info
+}
+
 
 ###############################################################################
 ## end of helper functions
@@ -358,16 +387,17 @@ function app_btop() {
     SUMMARY="Resource monitor that shows usage and stats for processor, memory, disks, network and processes.  Written in C++"
 }
 
-function app_g910-keys() {
+function app_g910-gkeys() {
     METHOD="repo"
     # this is pulling from my personal fork (which is unchanged from the below website)
+    REPO_NAME="g910-gkey-macro-support"
     if [ "${ACTION}" != "prettylist" ]; then
-        REPO_NAME="g910-gkey-macro-support"
         REPO_URL="https://github.com/GHMusicalCoder/${REPO_NAME}.git"
-        CURL_ADDRESS="https://github.com/JSubelj/g910-gkey-macro-support"
+        CURL_ADDRESS="https://github.com/JSubelj/${REPO_NAME}"
+        set_appversion
     fi
     PRETTYNAME="Logitech G910 Key Mapper"
-    WEBSITE="https://github.com/JSubelj/g910-gkey-macro-support"
+    WEBSITE="https://github.com/JSubelj/${REPO_NAME}"
     SUMMARY="Linux keyboard mapper for Logitech G910 G-Keys."
 }
 
@@ -482,22 +512,24 @@ case "${ACTION}" in
             zip) install_zip;;
         esac
         case ${APP} in
-            bw-cli|candy-icons|g910-keys|sweet-dark|sweet-folder)
+            bw-cli|candy-icons|g910-gkeys|sweet-dark|sweet-folder)
                 followup_${APP};;
         esac;;
     list)
         list_apps;;
     remove)
         elevate_privs
-        #validator "${1}"
-        remove_${1} ${1};;
+        remove_app ${1};;
     show)
         validator "${1}"
         show_appinfo;;
     update)
         echo "not yet implemented...";;
+        # go through all installed apps and note if there are any available updates
     upgrade)
         echo "not yet implemented...";;
+        # go through all installed apps and if there are updates available - update the app
+        # which is basically remove the old version and install the new one
     version)    echo "$(basename ${0}) current verion: ${VERSION}";;
     *)  messenger fatal "Unknown action supplied: ${ACTION}";;
 esac
