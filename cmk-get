@@ -3,7 +3,7 @@ LC_ALL=C
 
 # this is inspired by and deeply pulled from deb-get (https://github.com/wimpysworld/deb-get) by Martin Wimpress
 
-readonly VERSION="0.4.1"
+readonly VERSION="0.4.2"
 
 function usage() {
 cat <<HELP
@@ -244,6 +244,11 @@ function make_final_location() {
     fi    
 }
 
+function set_gnome_theme() {
+    gsettings set org.gnome.desktop.interface gtk-theme "${1}"
+    gsettings set org.gnome.desktop.wm.preferences theme "${1}"
+}
+
 function install_zip() {
     # if final location doesn't exist - create it
     if [ ! -d "${FINAL_LOCATION}" ]; then
@@ -308,8 +313,7 @@ function followup_g910-gkeys() {
 }
 
 function followup_sweet-dark() {
-    gsettings set org.gnome.desktop.interface gtk-theme "Sweet-Dark"
-    gsettings set org.gnome.desktop.wm.preferences theme "Sweet-Dark"
+    set_gnome_theme "Sweet-Dark"
 }
 
 function followup_bw-cli() {
@@ -333,7 +337,10 @@ function followup_sweet-folder() {
 
 function remove_cache_info() {
     if [ "${METHOD}" != "repo" ]; then
-        ${EP} rm -rf "${CACHE}/${APP}"
+        if [ "${METHOD}" != "tar" ]; then
+            ${EP} rm -rf "${CACHE}/${APP}"
+        fi
+
         ${EP} rm -rf "${CACHE}/${ZIPFILE}"
         ${EP} rm -rf "${CACHE}/${APP}.json"
     fi
@@ -368,6 +375,11 @@ function remove_g910-gkeys() {
     remove_cache_info
 }
 
+function remove_sweet-dark() {
+    set_gnome_theme "Yaru-MATE-dark"
+    ${EP} rm -rf "${FINAL_LOCATION}"/Sweet-Dark
+    remove_cache_info
+}
 
 ###############################################################################
 ## end of helper functions
