@@ -3,7 +3,7 @@ LC_ALL=C
 
 # this is inspired by and deeply pulled from deb-get (https://github.com/wimpysworld/deb-get) by Martin Wimpress
 
-readonly VERSION="0.3.3"
+readonly VERSION="0.4.1"
 
 function usage() {
 cat <<HELP
@@ -234,21 +234,39 @@ function download_file() {
     fi
 }
 
+function make_final_location() {
+    if [ ${FINAL_LOCATION:0:5} == "/home" ]; then
+        messenger info "Creating ${FINAL_LOCATION}"
+        mkdir -p "${FINAL_LOCATION}"
+    else 
+        messenger info "Creating ${FINAL_LOCATION} with privlidge"
+        ${EP} mkdir -p "${FINAL_LOCATION}"
+    fi    
+}
+
 function install_zip() {
     # if final location doesn't exist - create it
     if [ ! -d "${FINAL_LOCATION}" ]; then
-        if [ ${FINAL_LOCATION:0:5} == "/home" ]; then
-            messenger info "Creating ${FINAL_LOCATION}"
-            mkdir -p "${FINAL_LOCATION}"
-        else 
-            messenger info "Creating ${FINAL_LOCATION} with privlidge"
-            ${EP} mkdir -p "${FINAL_LOCATION}"
-        fi
+        make_final_location
     fi
 
     messenger progress "Installing ${APP}..."
     download_file
     ${EP} unzip -qq "${CACHE}/${ZIPFILE}" -d "${FINAL_LOCATION}"
+
+    # create the install record for the zip
+    ${EP} touch "${CACHE}/installed_${APP}_${APPVERSION}"
+}
+
+function install_tar() {
+    if [ ! -d "${FINAL_LOCATION}" ]; then
+        make_final_location
+    fi
+
+    messenger progress "Installing ${APP}..."
+    download_file
+
+    ${EP} tar -xf "${CACHE}/${ZIPFILE}" -C "${FINAL_LOCATION}"
 
     # create the install record for the zip
     ${EP} touch "${CACHE}/installed_${APP}_${APPVERSION}"
@@ -402,16 +420,19 @@ function app_g910-gkeys() {
 }
 
 function app_sweet-dark() {
-    METHOD="zip"
+    METHOD="tar"
+    WEBSITE="https://www.gnome-look.org/p/1253385/" 
     if [ "${ACTION}" != "prettylist" ]; then
-        get_release_info "https://api.github.com/repos/EliverLara/Sweet/releases/latest"
-        URL=$(grep "browser_download_url.*Dark.zip" "${CACHE}/${APP}.json" | head -n1 | cut -d'"' -f4)
+        get_release_info "${WEBSITE}/loadFiles"
+        local BASE=$(jq '.files | . |= map(select(.active == "1" and .name == "Sweet-Dark.tar.xz") | {name, updated_timestamp, url})' "${CACHE}/${APP}.json")
+        local UNDEC_URL=$(echo "${BASE}" | cut -d"," -f3 | cut -d":" -f2 | tr -d "[]" | tr -d "{}" | cut -d'"' -f2 | xargs)
+        local LAST_UPDATE=$(echo "${BASE}" | cut -d'"' -f 4 | tr -d "[]" | tr -d "{}" | head -n4 | tail -n1 | cut -d" " -f 1)
+        URL=$(python3 -c 'import sys, urllib.parse; print(urllib.parse.unquote(sys.argv[1]))' "${UNDEC_URL}")
         ZIPFILE="${URL##*/}"
         FINAL_LOCATION="$HOME/.themes"
-        set_appversion
+        APPVERSION=$(echo "${LAST_UPDATE}" | sed 's/-//g')
     fi
-    PRETTYNAME="Sweet Dark Theme"
-    WEBSITE="https://www.gnome-look.org/p/1253385/"        
+    PRETTYNAME="Sweet Dark Theme"          
     COPY_LOCATTION="$HOME/.themes"
 }
 
@@ -465,7 +486,7 @@ if [ ! -d "${CACHE}" ]; then
     ${EP} chmod 755 "${CACHE}" "${NO_OUTPUT}"
 
     # since we are in here - let's make sure our necessary programs are installed
-    ${EP} apt install -y git wget curl make "${NO_OUTPUT}"
+    ${EP} apt install -y git wget curl make jq "${NO_OUTPUT}"
 fi
 
 if [ -n "${1}" ]; then
@@ -512,6 +533,7 @@ case "${ACTION}" in
         case ${METHOD} in
             make) install_make;;
             repo) install_repo;;
+            tar) install_tar;;
             zip) install_zip;;
         esac
         case ${APP} in
