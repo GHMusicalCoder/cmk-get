@@ -3,7 +3,7 @@ LC_ALL=C
 
 # this is inspired by and deeply pulled from deb-get (https://github.com/wimpysworld/deb-get) by Martin Wimpress
 
-readonly VERSION="0.6.0"
+readonly VERSION="0.7.0"
 
 function usage() {
 cat <<HELP
@@ -151,6 +151,7 @@ function validator() {
     export REPO_NAME=""
     export REPO_URL=""
     export SUMMARY=""
+    export TEMP_LOC=""
     export UNDEC_URL=""
     export UNZIP_NAME=""
     export URL=""
@@ -262,7 +263,14 @@ function install_zip() {
 
     messenger progress "Installing ${APP}..."
     download_file
-    ${EP} unzip -qq "${CACHE}/${ZIPFILE}" -d "${FINAL_LOCATION}"
+    local INSTALLED_LOC=""
+    if [ -z "${TEMP_LOC}" ]; then
+        INSTALLED_LOC="${FINAL_LOCATION}"
+    else
+        INSTALLED_LOC="${TEMP_LOC}"
+    fi
+
+    ${EP} unzip -qq "${CACHE}/${ZIPFILE}" -d "${INSTALLED_LOC}"
 
     # create the install record for the zip
     ${EP} touch "${CACHE}/installed_${APP}_${APPVERSION}"
@@ -335,6 +343,10 @@ function followup_sweet-folder() {
     cp "${HOME_REPO}/${REPO_NAME}/${FOLDER}" "${FINAL_LOCATION}/${FOLDER}"
     sed -i 's/^Inherits=.*/Inherits=candy-icons,breeze-dark,gnome,ubuntu-mono-dark,Mint-X,elementary,gnome,hicolor' \
         "${FINAL_LOCATION}/${FOLDER}/index.theme"
+}
+
+function followup_hack_font() {
+
 }
 
 function remove_cache_info() {
@@ -485,8 +497,15 @@ function app_sweet-folder() {
     SUMMARY="Folder icons for the Sweet GTK theme."
 }
 
-function app_nerd-fonts () {
+function app_hack-font () {
     METHOD="zip"
+    if [ "${ACTION}" != "prettylist" ]; then
+        get_release_info "https://api.github.com/repos/ryanoasis/nerd-fonts/releases/latest"
+        URL=$(grep "browser_download_url.*Hack.zip" "${CACHE}/${APP}.json" | head -n1 | cut -d'"' -f4)
+        ZIPFILE="${URL##*/}"
+        TEMP_LOC="${CACHE}/${APP}"
+        FINAL_LOCATION="$HOME/.fonts"
+    fi
     PRETTYNAME="Nerd Fonts"
 }
 ###############################################################################
