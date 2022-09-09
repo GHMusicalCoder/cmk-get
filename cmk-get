@@ -3,7 +3,7 @@ LC_ALL=C
 
 # this is inspired by and deeply pulled from deb-get (https://github.com/wimpysworld/deb-get) by Martin Wimpress
 
-readonly VERSION="0.4.2"
+readonly VERSION="0.6.0"
 
 function usage() {
 cat <<HELP
@@ -140,15 +140,18 @@ function validator() {
     fi
 
     export APPVERSION=""
+    export BASE=""
     export CURL_ADDRESS=""
     export FINAL_LOCATION=""
     export INSTALLED_VER=""
+    export LAST_UPDATE=""
     export MAKE_PREFIX=""
     export METHOD=""
     export PRETTYNAME=""
     export REPO_NAME=""
     export REPO_URL=""
     export SUMMARY=""
+    export UNDEC_URL=""
     export UNZIP_NAME=""
     export URL=""
     export WEBSITE=""
@@ -178,6 +181,8 @@ function set_appversion() {
     if [[ ${METHOD} == "repo" ]]; then
         # pull appversion from readme.md file
         APPVERSION="$(curl -s "${CURL_ADDRESS}" | grep -m3 "<strong>" | tail -n 1 | cut -d'>' -f2 | cut -d'<' -f1)"
+    elif [[ ${METHOD} == "tar" ]]; then
+        APPVERSION=$(echo "${LAST_UPDATE}" | sed 's/-//g')
     else
         if [ -e "${CACHE}/${APP}.json" ]; then
             APPVERSION=$(grep "tag_name.*" "${CACHE}/${APP}.json" | cut -d'"' -f4 | cut --complement -c 1)
@@ -322,10 +327,7 @@ function followup_bw-cli() {
 }
 
 function followup_candy-icons() {
-    # icon zips into candy-icons-master so we want to rename to just candy-icons
-    mv "${HOME}/.icons/candy-icons-master" "${HOME}/.icons/candy-icons"
-
-    gsettings set org.gnome.desktop.interface icon-theme candy-icons
+    gsettings set org.gnome.desktop.interface icon-theme ${1}
 }
 
 function followup_sweet-folder() {
@@ -436,42 +438,50 @@ function app_sweet-dark() {
     WEBSITE="https://www.gnome-look.org/p/1253385/" 
     if [ "${ACTION}" != "prettylist" ]; then
         get_release_info "${WEBSITE}/loadFiles"
-        local BASE=$(jq '.files | . |= map(select(.active == "1" and .name == "Sweet-Dark.tar.xz") | {name, updated_timestamp, url})' "${CACHE}/${APP}.json")
-        local UNDEC_URL=$(echo "${BASE}" | cut -d"," -f3 | cut -d":" -f2 | tr -d "[]" | tr -d "{}" | cut -d'"' -f2 | xargs)
-        local LAST_UPDATE=$(echo "${BASE}" | cut -d'"' -f 4 | tr -d "[]" | tr -d "{}" | head -n4 | tail -n1 | cut -d" " -f 1)
+        BASE=$(jq '.files | . |= map(select(.active == "1" and .name == "Sweet-Dark.tar.xz") | {name, updated_timestamp, url})' "${CACHE}/${APP}.json")
+        UNDEC_URL=$(echo "${BASE}" | cut -d"," -f3 | cut -d":" -f2 | tr -d "[]" | tr -d "{}" | cut -d'"' -f2 | xargs)
+        LAST_UPDATE=$(echo "${BASE}" | cut -d'"' -f 4 | tr -d "[]" | tr -d "{}" | head -n4 | tail -n1 | cut -d" " -f 1)
         URL=$(python3 -c 'import sys, urllib.parse; print(urllib.parse.unquote(sys.argv[1]))' "${UNDEC_URL}")
         ZIPFILE="${URL##*/}"
         FINAL_LOCATION="$HOME/.themes"
-        APPVERSION=$(echo "${LAST_UPDATE}" | sed 's/-//g')
+        set_appversion
     fi
     PRETTYNAME="Sweet Dark Theme"          
     COPY_LOCATTION="$HOME/.themes"
 }
 
 function app_candy-icons() {
+    METHOD="tar"
+    WEBSITE="https://www.opendesktop.org/p/1305251/"
     if [ "${ACTION}" != "prettylist" ]; then
-        URL="https://github.com/EliverLara/candy-icons/archive/refs/heads/master.zip"
+        get_release_info "${WEBSITE}/loadFiles"
+        BASE=$(jq '.files | . |= map(select(.active == "1" and .name == "candy-icons.tar.xz") | {name, updated_timestamp, url})' "${CACHE}/${APP}.json")
+        UNDEC_URL=$(echo "${BASE}" | cut -d"," -f3 | cut -d":" -f2 | tr -d "[]" | tr -d "{}" | cut -d'"' -f2 | xargs)
+        LAST_UPDATE=$(echo "${BASE}" | cut -d'"' -f 4 | tr -d "[]" | tr -d "{}" | head -n4 | tail -n1 | cut -d" " -f 1)
+        URL=$(python3 -c 'import sys, urllib.parse; print(urllib.parse.unquote(sys.argv[1]))' "${UNDEC_URL}")
         ZIPFILE="${URL##*/}"
         FINAL_LOCATION="$HOME/.icons"
-        CURL_ADDRESS="https://github.com/EliverLara/candy-icons"
         set_appversion
     fi
-    PRETTYNAME="Candy Icons"
-    WEBSITE="https://www.pling.com/p/1305251/"
+    PRETTYNAME="Candy Icons"   
     SUMMARY="A Candy neon-istic icon theme."
 }
 
 function app_sweet-folder() {
-    METHOD="repo"
+    METHOD="tar"
+    WEBSITE="https://www.opendesktop.org/p/1284047"
     if [ "${ACTION}" != "prettylist" ]; then
-        REPO_NAME="Sweet-folders"
-        REPO_URL="https://github.com/EliverLara/${REPO_NAME}.git"
+        get_release_info "${WEBSITE}/loadFiles"
+        BASE=$(jq '.files | . |= map(select(.active == "1" and .name == "Sweet-Purple.tar.xz") | {name, updated_timestamp, url})' "${CACHE}/${APP}.json")
+        UNDEC_URL=$(echo "${BASE}" | cut -d"," -f3 | cut -d":" -f2 | tr -d "[]" | tr -d "{}" | cut -d'"' -f2 | xargs)
+        LAST_UPDATE=$(echo "${BASE}" | cut -d'"' -f 4 | tr -d "[]" | tr -d "{}" | head -n4 | tail -n1 | cut -d" " -f 1)
+        URL=$(python3 -c 'import sys, urllib.parse; print(urllib.parse.unquote(sys.argv[1]))' "${UNDEC_URL}")
+        ZIPFILE="${URL##*/}"
         FINAL_LOCATION="$HOME/.icons"
-        CURL_ADDRESS="https://github.com/EliverLara/Sweet-folders"
         set_appversion
     fi
     PRETTYNAME="Sweet Folders - Purple"
-    WEBSITE="https://www.opendesktop.org/p/1284047"
+    
     SUMMARY="Folder icons for the Sweet GTK theme."
 }
 
