@@ -3,7 +3,7 @@ LC_ALL=C
 
 # this is inspired by and deeply pulled from deb-get (https://github.com/wimpysworld/deb-get) by Martin Wimpress
 
-readonly VERSION="0.7.3"
+readonly VERSION="0.7.9"
 
 function usage() {
 cat <<HELP
