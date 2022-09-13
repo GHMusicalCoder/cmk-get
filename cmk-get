@@ -3,7 +3,7 @@ LC_ALL=C
 
 # this is inspired by and deeply pulled from deb-get (https://github.com/wimpysworld/deb-get) by Martin Wimpress
 
-readonly VERSION="0.7.1"
+readonly VERSION="0.7.3"
 
 function usage() {
 cat <<HELP
@@ -169,6 +169,10 @@ function validator() {
     esac;
 }
 
+function no_output() {
+    "$@" 1>/dev/null 2>&1;
+}
+
 function applist_csv() {
     echo "\"App Ref\",\"Application Name\",\"App Version\",\"Install Type\",\"Application Summary\""
     for APP in "${APPS[@]}"; do
@@ -296,7 +300,7 @@ function install_make() {
     ${EP} mkdir -p "${CACHE}/${APP}"
     ${EP} tar -xjf "${CACHE}/${ZIPFILE}" -C "${CACHE}/${APP}"
     cd "${CACHE}/${APP}"
-    make install ${MAKE_PREFIX} 1>/dev/null 2>&1
+    no_output make install ${MAKE_PREFIX} 
 
     # create the install record for the zip
     ${EP} touch "${CACHE}/installed_${APP}_${APPVERSION}"
@@ -305,7 +309,7 @@ function install_make() {
 function install_repo() {
     messenger progress "Installing ${APP}..."
     # pull down repo
-    git clone "${REPO_URL}" "${HOME_REPO}/${REPO_NAME}" 1>/dev/null 2>&1
+    no_output git clone "${REPO_URL}" "${HOME_REPO}/${REPO_NAME}" 
 
     ${EP} touch "${CACHE}/installed_${APP}_${APPVERSION}"
 }
@@ -321,8 +325,8 @@ function followup_g910-gkeys() {
     modprobe uinput
     cd "${DIR}"
     ${CMD} +x "${DIR}/installer.sh"
-    ${EP} ./installer.sh 1>/dev/null 2>&1
-    ${EP} systemctl enable --now g910-gkeys 1>/dev/null 2>&1
+    no_output ${EP} ./installer.sh 
+    no_output ${EP} systemctl enable --now g910-gkeys 
 }
 
 function followup_sweet-dark() {
@@ -332,6 +336,10 @@ function followup_sweet-dark() {
 function followup_bw-cli() {
     ${EP} chown $USER:$USER "${FINAL_LOCATION}/${UNZIP_NAME}"
     ${EP} chmod 755 "${FINAL_LOCATION}/${UNZIP_NAME}"
+}
+
+function followup_btop() {
+    echo ""
 }
 
 function followup_candy-icons() {
@@ -346,9 +354,9 @@ function followup_sweet-folder() {
 }
 
 function followup_hack-font() {
-    ${EP} mv "${TEMP_LOC}"/*Font\ Complete.ttf "${FINAL_LOCATION}" 
-    ${EP} mv "${TEMP_LOC}"/*Font\ Complete\ Mono.ttf "${FINAL_LOCATION}"
-    ${EP} fc-cache -fv
+    no_output ${EP} mv "${TEMP_LOC}"/*Font\ Complete.ttf "${FINAL_LOCATION}" 
+    no_output ${EP} mv "${TEMP_LOC}"/*Font\ Complete\ Mono.ttf "${FINAL_LOCATION}"
+    no_output ${EP} fc-cache -fv
 }
 
 function remove_cache_info() {
@@ -380,12 +388,12 @@ function remove_bw-cli() {
 
 function remove_btop() {
     cd "${CACHE}/${APP}"
-    make uninstall ${MAKE_PREFIX} 1>/dev/null 2>&1
+    no_output make uninstall ${MAKE_PREFIX} 
     remove_cache_info
 }
 
 function remove_g910-gkeys() {
-    ${EP} systemctl disable --now ${1} 1>/dev/null 2>&1
+    no_output ${EP} systemctl disable --now ${1} 
     ${EP} rm -rf /etc/${1}
     ${EP} rm -rf ${HOME_REPO}/${REPO_NAME}
     remove_cache_info
@@ -398,9 +406,9 @@ function remove_sweet-dark() {
 }
 
 function remove_hack-font() {
-    ${EP} rm "${TEMP_LOC}"/*Font\ Complete.ttf
-    ${EP} rm "${TEMP_LOC}"/*Font\ Complete\ Mono.ttf
-    ${EP} fc-cache -fv
+    no_output ${EP} rm "${TEMP_LOC}"/*Font\ Complete.ttf
+    no_output ${EP} rm "${TEMP_LOC}"/*Font\ Complete\ Mono.ttf
+    no_output ${EP} fc-cache -fv 
     remove_cache_info
 }
 
@@ -529,7 +537,6 @@ function app_hack-font () {
 readonly APPS=($(declare -F | grep app_ | sed 's|declare -f app_||g' | sort))
 readonly CACHE="/var/cache/cmk-get"
 readonly HOME_REPO="$HOME/Applications/GitApps"
-readonly NO_OUTPUT="1>/dev/null 2>&1"
 readonly ACTIVE_LIST="install remove update upgrade"
 
 if [ ! -d "${CACHE}" ]; then
@@ -588,10 +595,7 @@ case "${ACTION}" in
             tar) install_tar;;
             zip) install_zip;;
         esac
-        case ${APP} in
-            bw-cli|candy-icons|g910-gkeys|sweet-dark|sweet-folder)
-                followup_${APP};;
-        esac;;
+        followup_${APP};;
     list)
         list_apps;;
     remove)
