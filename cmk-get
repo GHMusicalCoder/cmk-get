@@ -3,7 +3,7 @@ LC_ALL=C
 
 # this is inspired by and deeply pulled from deb-get (https://github.com/wimpysworld/deb-get) by Martin Wimpress
 
-readonly VERSION="0.7.0"
+readonly VERSION="0.7.1"
 
 function usage() {
 cat <<HELP
@@ -345,8 +345,10 @@ function followup_sweet-folder() {
         "${FINAL_LOCATION}/${FOLDER}/index.theme"
 }
 
-function followup_hack_font() {
-
+function followup_hack-font() {
+    ${EP} mv "${TEMP_LOC}"/*Font\ Complete.ttf "${FINAL_LOCATION}" 
+    ${EP} mv "${TEMP_LOC}"/*Font\ Complete\ Mono.ttf "${FINAL_LOCATION}"
+    ${EP} fc-cache -fv
 }
 
 function remove_cache_info() {
@@ -394,6 +396,14 @@ function remove_sweet-dark() {
     ${EP} rm -rf "${FINAL_LOCATION}"/Sweet-Dark
     remove_cache_info
 }
+
+function remove_hack-font() {
+    ${EP} rm "${TEMP_LOC}"/*Font\ Complete.ttf
+    ${EP} rm "${TEMP_LOC}"/*Font\ Complete\ Mono.ttf
+    ${EP} fc-cache -fv
+    remove_cache_info
+}
+
 
 ###############################################################################
 ## end of helper functions
@@ -492,8 +502,7 @@ function app_sweet-folder() {
         FINAL_LOCATION="$HOME/.icons"
         set_appversion
     fi
-    PRETTYNAME="Sweet Folders - Purple"
-    
+    PRETTYNAME="Sweet Folders - Purple"   
     SUMMARY="Folder icons for the Sweet GTK theme."
 }
 
@@ -505,8 +514,10 @@ function app_hack-font () {
         ZIPFILE="${URL##*/}"
         TEMP_LOC="${CACHE}/${APP}"
         FINAL_LOCATION="$HOME/.fonts"
+        set_appversion
     fi
-    PRETTYNAME="Nerd Fonts"
+    PRETTYNAME="Hack Font"
+    WEBSITE="https://www.nerdfonts.com/#home"
 }
 ###############################################################################
 ## end of application functions
