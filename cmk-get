@@ -653,23 +653,30 @@ case "${ACTION}" in
     help)   usage;;
     install)
         elevate_privs
-        validator "${1}"
-        case ${METHOD} in
-            make) install_make;;
-            repo) install_repo;;
-            tar) install_tar;;
-            tz) install_tz;;
-            zip) install_zip;;
-        esac
-        followup_${APP};;
+        for APPITEM in "${@,,}"; do
+            validator "${APPITEM}"
+            install_${METHOD}
+            # case ${METHOD} in
+            #     make) install_make;;
+            #     repo) install_repo;;
+            #     tar) install_tar;;
+            #     tz) install_tz;;
+            #     zip) install_zip;;
+            # esac
+            followup_${APP};
+        done;;
     list)
         list_apps;;
     remove)
         elevate_privs
-        remove_app ${1};;
+        for APPITEM in "${@,,}"; do
+            remove_app ${APPITEM}
+        done;;
     show)
-        validator "${1}"
-        show_appinfo;;
+        for APPITEM in "${@,,}"; do
+            validator "${APPITEM}"
+            show_appinfo
+        done;;
     update)
         echo "not yet implemented...";;
         # go through all installed apps and note if there are any available updates
