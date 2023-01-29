@@ -164,6 +164,9 @@ function validator() {
     case ${ACTION} in
         install|update|upgrade)
             if [[ ${APPVERSION} == ${INSTALLED_VER} ]]; then
+                if [[ ${APPVERSION} == "" ]]; then
+                    messenger fatal "APPVERSION variable failed to get set."
+                fi
                 messenger match "Current version of ${APP} already installed."
             fi;;
     esac;
@@ -254,6 +257,11 @@ function make_final_location() {
     fi    
 }
 
+function make_temp_location() {
+    messenger info "Creating ${TEMP_LOC} with privlidge"
+    ${EP} mkdir -p "${TEMP_LOC}"
+}
+
 function set_gnome_theme() {
     gsettings set org.gnome.desktop.interface gtk-theme "${1}"
     gsettings set org.gnome.desktop.wm.preferences theme "${1}"
@@ -287,10 +295,40 @@ function install_tar() {
 
     messenger progress "Installing ${APP}..."
     download_file
+    local INSTALLED_LOC=""
+    if [ -z "${TEMP_LOC}" ]; then
+        INSTALLED_LOC="${FINAL_LOCATION}"
+    else
+        INSTALLED_LOC="${TEMP_LOC}"
+    fi
 
-    ${EP} tar -xf "${CACHE}/${ZIPFILE}" -C "${FINAL_LOCATION}"
+    ${EP} tar -xf "${CACHE}/${ZIPFILE}" -C "${INSTALLED_LOC}"
 
-    # create the install record for the zip
+    # create the install record for the tarball
+    ${EP} touch "${CACHE}/installed_${APP}_${APPVERSION}"
+}
+
+function install_tz() {
+    if [ ! -d "${FINAL_LOCATION}" ]; then
+        make_final_location
+    fi
+
+    if [ ! -d "${TEMP_LOC}" ]; then
+        make_temp_location
+    fi
+
+    messenger progress "Installing ${APP}..."
+    download_file
+    local INSTALLED_LOC=""
+    if [ -z "${TEMP_LOC}" ]; then
+        INSTALLED_LOC="${FINAL_LOCATION}"
+    else
+        INSTALLED_LOC="${TEMP_LOC}"
+    fi
+
+    ${EP} tar -xf "${CACHE}/${ZIPFILE}" -C "${INSTALLED_LOC}"
+
+    # create the install record for the tarball
     ${EP} touch "${CACHE}/installed_${APP}_${APPVERSION}"
 }
 
@@ -359,9 +397,15 @@ function followup_hack-font() {
     no_output ${EP} fc-cache -fv
 }
 
+function followup_shellcheck() {
+    no_output ${EP} mv "${TEMP_LOC}"/${UNZIP_NAME}/${APP} "${FINAL_LOCATION}"
+    ${EP} chown $USER:$USER "${FINAL_LOCATION}/${APP}"
+    ${EP} chmod 755 "${FINAL_LOCATION}/${APP}"
+}
+
 function remove_cache_info() {
     if [ "${METHOD}" != "repo" ]; then
-        if [ "${METHOD}" != "tar" ]; then
+        if [ -n ${TEMP_LOC} ]; then
             ${EP} rm -rf "${CACHE}/${APP}"
         fi
 
@@ -409,6 +453,11 @@ function remove_hack-font() {
     no_output ${EP} rm "${TEMP_LOC}"/*Font\ Complete.ttf
     no_output ${EP} rm "${TEMP_LOC}"/*Font\ Complete\ Mono.ttf
     no_output ${EP} fc-cache -fv 
+    remove_cache_info
+}
+
+function remove_shellcheck() {   
+    rm -rf "${FINAL_LOCATION}/${APP}"
     remove_cache_info
 }
 
@@ -527,6 +576,22 @@ function app_hack-font () {
     PRETTYNAME="Hack Font"
     WEBSITE="https://www.nerdfonts.com/#home"
 }
+
+function app_shellcheck () {
+    METHOD="tz"
+    if [ "${ACTION}" != "prettylist" ]; then
+        get_release_info "https://api.github.com/repos/koalaman/shellcheck/releases/latest"
+        URL=$(grep "browser_download_url.*.linux.x86_64.tar.xz" "${CACHE}/${APP}.json" | head -n1 | cut -d'"' -f4)
+        ZIPFILE="${URL##*/}"
+        TEMP_LOC="${CACHE}/${APP}"
+        FINAL_LOCATION="$HOME/.local/bin"
+        set_appversion
+        UNZIP_NAME="shellcheck-v${APPVERSION}"
+    fi
+    PRETTYNAME="ShellCheck"
+    WEBSITE="https://www.shellcheck.net"
+    SUMMARY="A command line version of the shellcheck.net's script linter"
+}
 ###############################################################################
 ## end of application functions
 ###############################################################################
@@ -545,7 +610,7 @@ if [ ! -d "${CACHE}" ]; then
     ${EP} chmod 755 "${CACHE}" "${NO_OUTPUT}"
 
     # since we are in here - let's make sure our necessary programs are installed
-    ${EP} apt install -y git wget curl make jq "${NO_OUTPUT}"
+    ${EP} apt install -y git wget curl make jq xz-utils"${NO_OUTPUT}"
 fi
 
 if [ -n "${1}" ]; then
@@ -593,6 +658,7 @@ case "${ACTION}" in
             make) install_make;;
             repo) install_repo;;
             tar) install_tar;;
+            tz) install_tz;;
             zip) install_zip;;
         esac
         followup_${APP};;
