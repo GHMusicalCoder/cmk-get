@@ -189,7 +189,7 @@ function set_appversion() {
     if [[ ${METHOD} == "repo" ]]; then
         # pull appversion from readme.md file
         APPVERSION="$(curl -s "${CURL_ADDRESS}" | grep -m3 "<strong>" | tail -n 1 | cut -d'>' -f2 | cut -d'<' -f1)"
-    elif [[ ${METHOD} == "tar" ]]; then
+    elif [[ -n "${LAST_UPDATE}" ]]; then
         APPVERSION=$(echo "${LAST_UPDATE}" | sed 's/-//g')
     else
         if [ -e "${CACHE}/${APP}.json" ]; then
@@ -289,26 +289,6 @@ function install_zip() {
 }
 
 function install_tar() {
-    if [ ! -d "${FINAL_LOCATION}" ]; then
-        make_final_location
-    fi
-
-    messenger progress "Installing ${APP}..."
-    download_file
-    local INSTALLED_LOC=""
-    if [ -z "${TEMP_LOC}" ]; then
-        INSTALLED_LOC="${FINAL_LOCATION}"
-    else
-        INSTALLED_LOC="${TEMP_LOC}"
-    fi
-
-    ${EP} tar -xf "${CACHE}/${ZIPFILE}" -C "${INSTALLED_LOC}"
-
-    # create the install record for the tarball
-    ${EP} touch "${CACHE}/installed_${APP}_${APPVERSION}"
-}
-
-function install_tz() {
     if [ ! -d "${FINAL_LOCATION}" ]; then
         make_final_location
     fi
@@ -578,7 +558,7 @@ function app_hack-font () {
 }
 
 function app_shellcheck () {
-    METHOD="tz"
+    METHOD="tar"
     if [ "${ACTION}" != "prettylist" ]; then
         get_release_info "https://api.github.com/repos/koalaman/shellcheck/releases/latest"
         URL=$(grep "browser_download_url.*.linux.x86_64.tar.xz" "${CACHE}/${APP}.json" | head -n1 | cut -d'"' -f4)
