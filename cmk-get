@@ -151,11 +151,13 @@ function validator() {
     export REPO_NAME=""
     export REPO_URL=""
     export SUMMARY=""
+    export TAR_PARM=""
     export TEMP_LOC=""
     export UNDEC_URL=""
     export UNZIP_NAME=""
     export URL=""
     export WEBSITE=""
+    export WIPE_OLD=""
     export ZIPFILE=""
 
     # Source the variables
@@ -262,6 +264,15 @@ function make_temp_location() {
     ${EP} mkdir -p "${TEMP_LOC}"
 }
 
+function wipe_old() {
+    if [[ -d "${TEMP_LOC}" ]]; then
+        ${EP} rm -rf ${TEMP_LOC}
+    fi
+    if [[ -d "${FINAL_LOCATION}" ]]; then
+        ${EP} rm -rf ${FINAL_LOCATION}
+    fi
+}
+
 function set_gnome_theme() {
     gsettings set org.gnome.desktop.interface gtk-theme "${1}"
     gsettings set org.gnome.desktop.wm.preferences theme "${1}"
@@ -293,20 +304,10 @@ function install_tar() {
         make_final_location
     fi
 
-    if [ ! -d "${TEMP_LOC}" ]; then
-        make_temp_location
-    fi
-
     messenger progress "Installing ${APP}..."
     download_file
-    local INSTALLED_LOC=""
-    if [ -z "${TEMP_LOC}" ]; then
-        INSTALLED_LOC="${FINAL_LOCATION}"
-    else
-        INSTALLED_LOC="${TEMP_LOC}"
-    fi
 
-    ${EP} tar -xf "${CACHE}/${ZIPFILE}" -C "${INSTALLED_LOC}"
+    ${EP} tar ${TAR_PARM} -xf "${CACHE}/${ZIPFILE}" -C "${FINAL_LOCATION}"
 
     # create the install record for the tarball
     ${EP} touch "${CACHE}/installed_${APP}_${APPVERSION}"
@@ -334,6 +335,7 @@ function install_repo() {
 
 function followup_g910-gkeys() {
     local DIR="${HOME_REPO}/${REPO_NAME}"
+    ${EP} ${CHOWN_CMD} ${DIR}
     local CMD=""
     if [ ${HOME_REPO:0:5} == "/home" ]; then
         CMD="chmod"
@@ -381,6 +383,10 @@ function followup_shellcheck() {
     no_output ${EP} mv "${TEMP_LOC}"/${UNZIP_NAME}/${APP} "${FINAL_LOCATION}"
     ${EP} chown $USER:$USER "${FINAL_LOCATION}/${APP}"
     ${EP} chmod 755 "${FINAL_LOCATION}/${APP}"
+}
+
+function followup_ventoy() {
+    no_output ${EP} ${CHOWN_CMD} "${FINAL_LOCATION}"
 }
 
 function remove_cache_info() {
@@ -441,6 +447,10 @@ function remove_shellcheck() {
     remove_cache_info
 }
 
+function remove_ventoy() {
+    wipe_old
+    remove_cache_info
+}
 
 ###############################################################################
 ## end of helper functions
@@ -572,6 +582,23 @@ function app_shellcheck () {
     WEBSITE="https://www.shellcheck.net"
     SUMMARY="A command line version of the shellcheck.net's script linter"
 }
+
+function app_ventoy() {
+    METHOD="tar"
+    if [ "${ACTION}" != "prettylist" ]; then
+        get_release_info "https://api.github.com/repos/ventoy/Ventoy/releases/latest"
+        URL=$(grep "browser_download_url.*.gz" "${CACHE}/${APP}.json" | head -n1 | cut -d'"' -f4)
+        ZIPFILE="${URL##*/}"
+        WIPE_OLD="yes"
+        FINAL_LOCATION="${HOME_REPO}/${APP}"
+        TAR_PARM="--strip-components=2"
+        set_appversion
+    fi
+    
+    PRETTYNAME="Ventoy"
+    WEBSITE="https://www.ventoy.net"
+    SUMMARY="An open source tool to create bootable USB drives."
+}
 ###############################################################################
 ## end of application functions
 ###############################################################################
@@ -583,6 +610,7 @@ readonly APPS=($(declare -F | grep app_ | sed 's|declare -f app_||g' | sort))
 readonly CACHE="/var/cache/cmk-get"
 readonly HOME_REPO="$HOME/Applications/GitApps"
 readonly ACTIVE_LIST="install remove update upgrade"
+readonly CHOWN_CMD="chown -R $USER:$USER"
 
 if [ ! -d "${CACHE}" ]; then
     elevate_privs
@@ -635,14 +663,10 @@ case "${ACTION}" in
         elevate_privs
         for APPITEM in "${@,,}"; do
             validator "${APPITEM}"
+            if [[ -n ${WIPE_OLD} ]]; then
+                wipe_old
+            fi
             install_${METHOD}
-            # case ${METHOD} in
-            #     make) install_make;;
-            #     repo) install_repo;;
-            #     tar) install_tar;;
-            #     tz) install_tz;;
-            #     zip) install_zip;;
-            # esac
             followup_${APP};
         done;;
     list)
