@@ -147,6 +147,7 @@ function validator() {
     export LAST_UPDATE=""
     export MAKE_PREFIX=""
     export METHOD=""
+    export NO_FILEOUT=""
     export PRETTYNAME=""
     export REPO_NAME=""
     export REPO_URL=""
@@ -225,11 +226,11 @@ function show_appinfo() {
 function get_release_info() {
     # do not process releases while generating lists
     if [ "${ACTION}" == "install" ] || [ "${ACTION}" == "update" ]; then
-        if [ ! -e "${CACHE}/${APP}.json" ] || test "$(find "${CACHE}/${APP}.json" -mmin +60)"; then
+        if [ ! -e "${CACHE}/${APP}.json" ] || test "$(find "${CACHE}/${APP}.json" -mtime 3)"; then
             messenger progress "Updating ${CACHE}/${APP}.json"
             if ! ${EP} wget -q --no-use-server-timestamp "${1}" -O "${CACHE}/${APP}.json"; then
                 messenger warn "Updating ${CACHE}/${APP}.json failed.  Deleting it."
-                ${EP} rm "${CACHE}/{$APP}.json" "${NO_OUTPUT}"
+                ${EP} rm "${CACHE}/${APP}.json" "${NO_OUTPUT}"
             fi
             if [ -f "${CACHE}/${APP}.json" ] && grep "API rate limit exceeded" "${CACHE}/${APP}.json"; then
                 messenger warn "Updating ${CACHE}/${APP}.json exceed GitHub API limits. Deleting it."
@@ -237,12 +238,28 @@ function get_release_info() {
             fi
         fi
     fi
+}
 
+function get_header_info() {
+    if [ ! -e "${CACHE}/${APP}.hdt" ] || test "$(find "${CACHE}/${APP}.hdt" -mtime 3)"; then
+        messenger progress "Updating ${CACHE}/${APP}.hdt  [HeaDer Text]"
+        if ! ${EP} curl -sS -D "${CACHE}/${APP}.hdt" "${1}"; then
+            messenger warn "Updating ${CACHE}/${APP}.hdt failed.  Deleting it."
+            ${EP} rm "${CACHE}/${APP}.hdt" "${NO_OUTPUT}"
+        fi
+    fi
 }
 
 function download_file() {
+    local VAR_OUT=""
+    if [[ -z "${NO_FILEOUT}" ]]; then
+        VAR_OUT="-O ${CACHE}/${ZIPFILE}"
+    else
+        VAR_OUT="-P ${CACHE}"
+    fi
+    
     if [ ! -f "${CACHE}/${ZIPFILE}" ]; then
-        if ! ${EP} wget --quiet --continue --show-progress --progress=bar:force:noscroll "${URL}" -O "${CACHE}/${ZIPFILE}"; then
+        if ! ${EP} wget --quiet --continue --show-progress --progress=bar:force:noscroll "${URL}" "${VAR_OUT}"; then
             messenger error "Failed to download ${ZIPFILE}.  Deleting ${CACHE}/${ZIPFILE}"
             ${EP} rm "${CACHE}/${ZIPFILE}" "${NO_OUTPUT}"
         fi
@@ -307,7 +324,7 @@ function install_tar() {
     messenger progress "Installing ${APP}..."
     download_file
 
-    ${EP} tar ${TAR_PARM} -xf "${CACHE}/${ZIPFILE}" -C "${FINAL_LOCATION}"
+    ${EP} tar "${TAR_PARM}" -xf "${CACHE}/${ZIPFILE}" -C "${FINAL_LOCATION}"
 
     # create the install record for the tarball
     ${EP} touch "${CACHE}/installed_${APP}_${APPVERSION}"
@@ -452,6 +469,10 @@ function remove_ventoy() {
     remove_cache_info
 }
 
+function remove_pycharm-pro() {
+    remove_cache_info
+}
+
 ###############################################################################
 ## end of helper functions
 ###############################################################################
@@ -516,7 +537,7 @@ function app_sweet-dark() {
         set_appversion
     fi
     PRETTYNAME="Sweet Dark Theme"          
-    COPY_LOCATTION="$HOME/.themes"
+    COPY_LOCATION="$HOME/.themes"
 }
 
 function app_candy-icons() {
@@ -598,6 +619,25 @@ function app_ventoy() {
     PRETTYNAME="Ventoy"
     WEBSITE="https://www.ventoy.net"
     SUMMARY="An open source tool to create bootable USB drives."
+}
+
+function app_pycharm-pro() {
+    METHOD="tar"
+    if [ "${ACTION}" != "prettylist" ]; then
+        get_header_info "https://data.services.jetbrains.com/products/download?code=PCP&platform=linux"
+        URL=$(grep -E "location:" "${CACHE}/${APP}.hdt" | cut --complement -c 1-10 | tr -d '\r')
+        LAST_UPDATE=$(echo "$URL" | cut --complement -c 1-10 | cut -d '-' -f 3 | rev | cut --complement -c 1-8 | rev)
+        ZIPFILE="${URL##*/}"
+        FINAL_LOCATION="${CACHE}/${APP}"
+        NO_FILEOUT="yes"
+        set_appversion
+    fi
+    PRETTYNAME="Pycharm Professional"
+    SUMMARY="An IDE for Python from JetBrains"
+}
+
+function app_pycharm-comm() {
+    METHOD="tar"
 }
 ###############################################################################
 ## end of application functions
